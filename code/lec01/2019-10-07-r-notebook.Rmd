@@ -1,0 +1,271 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+# сохранение результатов вычислений
+```{r}
+ans1=23+14/2-18+(7*pi/2)
+ans1
+ans2=ans1/2
+ans2
+
+ans3 <- ans2*ans1 # присваивание (классическое)
+ans2*ans1 -> ans4
+```
+# чтение данных (изменение исходных данных)
+```{r}
+data1 <- c(3,5,7,3,2,6,8,5,6,9) # вектор
+data1
+class(data1)
+data2 <-  c(data1,4,5,6,7,7)
+data2
+data3<-c(5,data1)
+data3
+
+day1 <- c("mon","tue","wed")
+class(day1)
+day2<-c(day1,'thu',"fri")
+day2
+
+mix <- c(data1,day1)
+mix
+class(mix)
+
+#as.numeric()
+
+# command scan()
+
+data4<-scan()
+data4
+
+day2<-scan(what='character')
+day2
+data5<-scan(file='C:/Users/107/Documents/scan1.txt')
+data5
+
+# import dir()
+
+# convert type
+cut<-c('one',"two","one","two")
+class(cut)
+cut <- as.factor(cut)
+cut
+class(cut)
+
+cut<-as.numeric(cut)
+cut
+
+cut<-as.character(cut)
+cut
+
+# numeric -- int float complex
+cut2<-c(15.0,17.1,28.0,21.1)
+class(cut2)
+
+cut2<-as.integer(cut2)
+cut2
+class(cut2)
+
+#months1<-c('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec')
+months1<-c('январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь')
+months1<-as.numeric(months1<-as.factor(months1))
+months1<-as.numeric(as.factor(months1))
+months1<-as.numeric(factor(months1))
+months1
+
+
+#  Найдите корни квадратного уравнения
+a=1
+b=1
+c=-1
+
+x1=(-b+sqrt(b^2-4*a*c))/2*a
+#x1=(-1*b+(sqrt(b^2-4*a*c))/(2*a) это от лектора
+x1
+x2=(-b-sqrt(b^2-4*a*c))/2*a
+x2
+#NaN
+#NA
+a=3
+b=2
+c=-1
+```
+
+# создание последовательности
+```{r}
+m<-seq(1:1000)
+m<-sum(m)
+m
+sum(1:1000)
+
+?seq
+
+x=2
+x==log(exp(x))
+```
+
+# практика 1
+```{r}
+print('x')
+
+1:6
+
+seq(0, 10)
+
+seq(1,10,2)
+
+#seq(0,10,)
+
+seq(3,12)
+seq(3,30,3)
+from=3
+seq(from,30,from+3)
+
+x<-(1:10)
+y<-x
+print(x*y)
+
+x<-c(4,6,3)
+x
+rep(x,3)
+
+x<-c(rep(4,8),rep(6,7),rep(3,9))
+matrix(x,4,6)
+
+#ls()
+#rm(c("x","a"))
+
+#remove all   rm(list=ls())
+
+students <- c("Петя","Саша","Таня","Лена","Миша")
+midterm <-c(80,90,93,82,95)
+students[4]
+students[-4]
+final<-c(78,84,95,82,91)
+midterm+final # поэлементная
+(midterm+final)/2
+cg<-0.4*midterm+0.6*final
+cg
+
+final>midterm
+
+(final<midterm) & (midterm > 80)
+# операторы булевой логики
+7>5
+7<5
+7>=7
+7<=5
+7==7
+7!=5
+
+(5 > 7) & (6*7=42)
+(5 > 7) | (6*7=42)
+help(ls)
+help('&&')
+
+#if(age>18 && age<=25)
+```
+# Список векторных операций. Векторные операции и базовая статистика
+```{r}
+sum(vect) #сумма всех элементов
+mean(vec)#среднее
+median(vec)#медиана
+min(vec), max(vec)
+sd(vec)#ст отклонение
+var(vec)#дисперсия
+
+length(vec)#число элементов
+summary(vec)#5-значная описательная статистика
+
+summary(final)
+
+any(vec)# кто-то
+all(vec)# все
+
+sort(vec)
+
+mean(midterm)#среднее
+median(midterm)#медиана
+min(midterm)
+max(midterm)
+sd(midterm)#ст отклонение
+var(midterm)#дисперсия
+
+mean(final)#среднее
+median(final)#медиана
+min(final)
+max(final)
+sd(final)#ст отклонение
+var(final)#дисперсия
+
+sort(cg)
+```
+```{r}
+a<-90 #90%
+cg>=a
+a.students < which(cg>=a)#проверка по условию
+a.students
+students[a.students]#индексация по именам
+names(cg) <- students
+names(cg)
+cg[c("Петя","Саша","Таня")]
+
+```
+# работа с пропусками
+```{r}
+f<-c(1:3,NA,6:15,NA,16:20)
+f
+mean(f)
+mean(f,na.rm=T) #mean(f,na.rm=TRUE)
+sum(f,na.rm=T)
+min(f,na.rm=T)
+max(f,na.rm=T)
+length(f)
+median(f,na.rm=T)
+```
+#матрицы
+```{r}
+c(1:8,10)
+#3x3 matrix
+
+Ma<-matrix(c(1:8,10),nro3,3,T) #byrow
+Ma
+Mb<-matrix(c(1:8,10),3,3,F) #!byrow
+Mb
+
+c(1:3)
+y #вектор столбец
+
+y<-c(1:3)
+y<-matrix(c(1:3),length(c(1:3)),1)
+y
+
+a<-3
+b<-5
+#поэлементно усножить a*Ma
+#матрично умножить Ma Mb
+Ma %*% Mb
+
+#транспонирование Ma
+t(Ma)
+
+# замена первой строки на единицы
+Ma[1,]<-rep(1,3)
+Ma
+```
+

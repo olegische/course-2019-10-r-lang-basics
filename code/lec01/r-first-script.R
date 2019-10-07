@@ -1,0 +1,19 @@
+pi^2
+sqrt(pi)
+abs(pi) #mod
+factorial(4)
+log2(10)
+log(3,base=10)
+exp(2)
+cos(pi)
+sin(pi)
+tan(pi)
+acos(pi)
+pi*2^3-sqrt(4)
+abs(12-7*2/3-9)
+factorial(4)
+log10(2)
+log(2)
+exp(0.6931472)
+sin(45*pi/180)
+asin(0.7071068)*180/pi
