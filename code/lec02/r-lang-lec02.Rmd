@@ -1,0 +1,386 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r}
+#cummax() # неуменьшающиеся числа
+#cummin() # неувелич числа
+#cumprod()
+#cumsum() # сумма элементов до точки
+
+#pmin()
+#pmax()
+
+
+x<-c(1,2,3,4)
+x<-1:4
+x<-seq(1,4)
+
+set.seed(1)
+x<-rnorm(10,0,1) # генерация ранд норм откл
+y<-rnorm(10,0,1)
+z<-rnorm(10,0,1)
+x
+y
+z
+pmin(x,y,z)
+pmax(x,y,z)
+
+x<-0:10
+sum(x)
+
+sum(x<5)
+x<5
+
+sum(x[which(x<5)])
+
+
+
+1*(x<5)
+
+x<-0:10
+x*(x<5)
+
+sum(x*(x<5))
+
+y<-c(8,3,5,7,6,6,8,9,2,3,9,4,10,4,11)
+sort(y)
+
+help("sort")
+
+sort(y, decreasing = T)
+
+rev(y)
+rev(sort(y))
+
+z<-y[-1]
+z
+
+rev(sort(y))[1:3]
+
+sum(rev(sort(y))[1:3])
+
+# ограниченное среднее
+
+help(mean)
+
+mean((sort(y))[2:length(y)-1])
+
+rev(sort(y))[2]
+sort(y)[length(y)-1]
+
+y1<-rep(y,2) # репликация
+y1
+
+length(y1[which((y1>3)&(y1<7))])
+
+length(y1[(y1 > 3) & (y1 < 7)])
+length(y1[which((y1>3)&(y1<7))])
+
+
+y2<-1:50
+# создать y3 в котором нет множителей 7,14,21...
+# 1 - кол-во множителей
+f<-floor(50/7)
+# множители
+7*(1:7)
+y2
+y2%%7
+
+y3<-y2[y2 %% 7 != 0]
+y3
+
+y3<-y2[which(!!(y2%%7))]
+y3
+
+f<-floor(50/7)
+s<-7*(1:7)
+y2[-s]
+
+y2[-((1:50)*(1:50%%7==0))]
+
+x<-0:6
+x<4
+
+# все ли элементы х >0
+all(x>0)
+
+# какой-то меньше
+any(x<0)
+```
+
+# комбинации для логики
+
+```{r}
+x<-c(NA,F,T)
+names(x)<-as.character(x)
+outer(x,x,"&") # логическая и
+outer(x,x,"|") # логическая или
+
+# нужно исключать NA, тк оно всегда дает TRUE
+```
+
+# повтор
+```{r}
+rep(seq(1,4),2)
+
+rep(seq(1,4),times=2,each=2)
+rep(1:4,2,3)
+# регулярный шаблон
+rep(1:4,1:4)
+# нерегурярный шаблон
+rep(1:4,c(4,1,4,2))
+
+# если смеш симв и числ, то создаются факторы и работа ведется с факторами
+
+
+gl(4,3) # generate levels
+
+gl(4,3,length = (length(gl(4,3))*2))
+# код А В С (3 уровня, длина 24)
+
+gl(3,2,24, labels = c("A","B","C"))
+
+#Создайте переменную t в которой будут находиться 5 факторов от “A” #до “E”.
+#•    Необходимо сократить число факторов до трех. Используйте #логические операторы. Факторы А и Е – должны стать 1, факторы С и D #– должны стать 3, а фактор B – 2.  Результат запишите в переменную #t2
+
+t<-gl(5,1,labels = c("A","B","C","D","E"))
+t<-letters[1:5]
+t
+t2<-gl(3,1,labels = as.numeric(factor(t)))
+
+t2<-factor(t,labels = c(1,2,3,3,1))
+t2<-factor(1+(t=="b")+2*(t=="c")+2*(t=="d"))
+t2
+```
+
+# матрицы
+
+```{r}
+x<-matrix(rep(c(1, 0, 0, 0), 3),3,3)
+x<-matrix(c(1,0,0,0,1,0,0,0,1),nrow=3)
+x
+class(x)
+
+attributes(x)
+
+vec<-c(1,2,3,4,4,3,2,1)
+m<-matrix(vec,nrow=2,byrow=T)
+m
+
+attributes(m)
+
+dim(vec) <- c(2,4)
+vec
+
+class(vec)
+
+t(vec)
+
+set.seed(1)
+x<-matrix(rpois(20,1.5),nrow = 4)
+x
+
+rownames(x) <- rownames(x,do.NULL = F, prefix = "Trial.")
+x
+
+colnames(x) <- colnames(x,do.NULL = F, prefix = "Trial.")
+x
+
+dimnames(x) <- list(NULL,paste("Лекарство.",1:5,sep = ""))
+x
+
+dimnames(x)<- list(paste("Trial.",1:4,sep =""), paste("Drug.",1:5,sep =""))
+x
+
+```
+
+# data frame
+```{r}
+# session set working directory
+survey <- read.csv("survey_data.csv")
+class(survey)
+
+View(survey)
+
+# chunk output in console
+head(survey)
+View(head(survey))
+
+tail(survey)
+
+head(survey,3)
+
+str(survey) #структура
+
+summary(survey)
+
+attributes(survey)
+
+# можно обращаться по имени или по индексу
+
+# колво строк колво столбцов
+
+nrow(survey)
+ncol(survey)
+
+# knit to html, word or smth
+# inline tools
+
+length(unique(survey[["Program"]]))
+nrow(unique(survey["Program"]))
+
+sum(survey[["Program"]]=="PPM")
+
+```
+
+В данном объекте присутствуют `r nrow(survey)` строк, столбцов `r ncol(survey)`. Респонденты представлены `r length(unique(survey[["Program"]]))` программами. Из программы PPM `r sum(survey[["Program"]]=="PPM")` студентов.
+
+# индексация по data frame
+
+```{r}
+survey[["Program"]] # element
+survey$Program # element
+
+survey[,1]
+
+survey["Program"] #sub-df (подвыборка)
+
+prog <- survey["Program"]
+
+write.csv(prog, "prog.csv")
+rm(prog)
+prog<-read.csv("prog.csv")
+
+
+# ??? preview import text data
+
+plot(survey[["Program"]])
+
+library(ggplot2)
+qplot(survey[["Program"]])
+
+hist(survey$TVhours)
+
+# множественная индексация
+# колонки 1, 5
+
+head(survey[c(1,5)])
+
+#по именам
+
+head(survey[c("Program","Editor")])
+
+# program 6-го
+
+survey[6,"Program"]
+survey$Program[6]
+survey[["Program"]][6]
+
+# 3 - 5 строки 1 и 5 столбца
+
+survey[3:5, c(1,5)]
+
+
+survey[["Program"]][which(survey=="MISM")]
+survey[which(survey[["Program"]] == "MISM"),]
+survey[which(survey$Program == "MISM"),]
+
+mism<-survey[survey$Program == "MISM",]
+mism<-survey[which(survey$Program == "MISM"),]
+mism
+
+# пользователей LaTeX
+#•    пользователей Windows работающих в Rmarkdown
+#•    пользователей Mac OS X, смотрящих телевизор больше 9 часов, и пользователей Windows, смотрящих телевизор меньше 3 часов
+
+survey[survey$Editor == "LaTeX",]
+
+#survey[survey[survey$OperatingSystem  == "Windows",]$Editor == "R Markdown",]
+
+survey[(survey$Editor == "R Markdown")&(survey$OperatingSystem == "Windows"),]
+
+survey[((survey$OperatingSystem == "Mac OS X") & (survey$TVhours>9)) | ((survey$OperatingSystem == "Windows") & (survey$TVhours<3)),]
+
+# просуммируйте число TV часов, которые смотрят студенты программ Other
+
+sum(survey$TVhours[survey$Program == "Other"])
+sum(survey[which(survey$Program == "Other"), "TVhours"])
+
+
+```
+
+# создание df (data frame)
+
+```{r}
+name <- letters[1:5]
+mark <- c(15.0,16.7,19.1,9.3,20.2)
+try <- c(1,2,3,2,3)
+pass <- c("yes","no","yes","no","no")
+
+# create df
+#class, struc, head 2 lines
+#summary
+# 3 and 5; 1 an 3 columns
+
+df.1 <- data.frame(name,mark,try,pass)
+
+class(df.1)
+
+structure(df.1)
+
+head(df.1,2)
+
+df.1[c(3,5),c(1,3)]
+
+df.1[3:5,c(1,3)]
+
+
+# Создайте матрицу 4*4 из последовательности 1:16. Извлеките из матрицы подматрицу, строки которой содержат элементы больше 7.
+
+which(matrix(1:16,4,4) > 7)
+
+matrix(which(matrix(1:16,4,4) > 7), ncol = 3)
+
+matrix(which(matrix(1:16,4,4) > 7))
+
+#Напишите программу, которая вращает заданную матрицу на 90 градусов.
+# ДОМАШНЕЕ ЗАДАНИЕ
+m<-matrix(1:16,4,4)
+m
+
+attributes(m)
+v<-rev(m)
+dim(v) <- c(4,4)
+#dim(v) <- attributes(m)
+
+attributes(m)
+
+dim(vec) <- c(2,4)
+
+dim()
+
+matrix(t(rev(m)))
+
+
+```
+
