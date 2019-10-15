@@ -1,0 +1,428 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+# lecture 03
+
+```{r}
+x1<-c(12,15,17,11,15)
+x2<-c(8,9,7,9,NA)
+
+G <- data.frame(x1,x2)
+G
+
+index <- with(G, order(x1))
+index2 <-  with(G,order(x2))
+
+index
+index2
+
+x3<-c(12,14,17,21,17)
+G2<-with(G, data.frame(x1,x2,x3)[index,])
+G2
+# это для группировок
+# загрузили датафрейм file - import dataset  - from text (reader)
+
+sort(Events$total)
+Events$state[1:10]
+Events$abb[1:10]
+
+ind <- order(Events$total)
+Events$abb[ind]
+
+max(Events$total)
+i_max <- which.max(Events$total)
+
+Events$state[i_max]
+
+min(Events$total)
+
+i_min <- which.min(Events$total)
+Events$state[i_min]
+
+x <- c(31,4,15,92,65)
+rank(x)
+x
+
+data.frame(x,rank(x),order(x),sort(x))
+
+x<-c(1,2,3)
+y<-c(10,20,30,40,50,60,70)
+x+y
+
+# задания
+
+# присвойте переменной pop численность населения из выборки, отсортируйте и  выберите первый элемент
+
+pop <- Events$population
+sort(pop)[1]
+
+# Найдите индекс наименьшего населения двумя способами
+which.min(Events$population)
+order(Events$population)[1]
+Events$population[order(Events$population)[1]]
+
+#Теперь мы знаем наименьший штат и то, какую строку в выборке он занимает. Что это за штат? Задайте переменную states в которую сохраните имена штатов из выборки. Отобразите имя штата с минимальным населением.
+
+states<-Events$state[order(Events$population)[1]]
+states
+
+#Используйте функцию rank для определения ранга числа жителей в каждом штате (от наименьшего к наибольшему). Сохраните ранги в переменную ranks, затем создайте дата фрейм с именами штатов и рангами. Назовите его my_df.
+
+ranks<-rank(Events$population)
+ranks
+my_df <- data.frame(Events$state,ranks)
+my_df
+
+# Повторите предыдущее задание, но в этот раз определите порядок вместо рангов
+orders<-order(Events$population)
+my_df <- data.frame(Events$state,orders)
+my_df
+
+#chunk output to console
+
+#NA example
+
+View(na_example)
+
+na_example<-na_example$x
+
+#Загрузите пример na_example. Найдите среднее, найдите число NA.
+
+mean(na_example,na.rm = T)
+
+na_example<-na_example$x
+
+sum(is.na(na_example))
+sum(as.numeric(is.na(na_example)))
+
+
+
+(length(na_example))-(sum(as.numeric(sort(na_example | NA))))
+
+# Создайте столбец в дата фрейме события, назовите его rate. Этот столбец должен отражать число событий на 100 000 человек населения
+
+View(Events)
+
+Events$rate <- Events$total/Events$population * 100000
+
+# Используя вновь созданный столбец, определите новый порядок штатов по числу событий
+
+df_1 <- data.frame(Events$state, rank(Events$rate))
+
+df_1
+
+#  Рассчитайте среднее число событий по США (на основе rate)
+
+mean(Events$rate)
+
+Events$state[which(Events$rate < 0.71)]
+
+Events$state[Events$rate < 0.71]
+
+ind<-Events$rate<=0.71
+Events$state[ind]
+
+sum(ind)
+
+# Создайте логический вектор low, в котором будет отражен rate событий меньше 1.
+
+low <- Events$rate < 1
+
+low
+
+
+west <- Events$region == "West"
+
+ind <- low & west
+
+Events$state[ind]
+
+ind <- Events$state == "California"
+
+Events$rate[ind]
+
+
+
+# match
+
+ind<-match(c("New York", "Florida", "Texas"), Events$state)
+Events$rate[ind]
+
+# %in%
+
+c("Boston", "Dakota", "Washington") %in% Events$state
+
+c("New York", "Florida", "Texas") %in% Events$state
+
+#найти индексы
+
+ind <- which(Events$state %in% c("New York", "Florida", "Texas"))
+
+# северовосто уровень меньше 1
+
+ind <- which((Events$rate < 1) & (Events$region %in% c("Northeast")))
+
+Events$state[ind]
+
+# Вычислите среднее по штатам с учетом rate и укажите, сколько штатов имеет число событий меньше среднего
+
+sum(as.numeric(Events$rate < mean(Events$rate)))
+sum(Events$rate < mean(Events$rate))
+
+# Используя match идентифицируйте штаты с аббревиатурами AK, MI, IA.
+ind<-match(c("AK", "MI", "IA"), Events$abb)
+ind
+
+# Создайте логический вектор, который отвечает на вопрос, какие из перечисленных аббревиатур реальны, MA, ME, MI, MO, MU? А какие не реальны?
+
+
+!c("MA", "ME", "MI", "MO", "MU") %in% Events$abb
+
+
+# Используя cbind, создайте матрицу 10 x 5, в которой первый столбец x=1:10. Добавьте 2*x,
+# 3*x, 4*x and 5*x в столбцы 2-5. Какова сумма элементов в 7-й строке?
+
+cbind(x1,x2)
+rbind(x1,x2)
+
+x <- 1:10
+x
+sum(cbind(x, 2*x, 3*x, 4*x, 5*x)[7,])
+
+#Какая команда из набора создаст матрицу с множителями 3 в третьем столбце?
+# A) matrix(1:60,20,3)
+# B) matrix(1:60,20,3,byrow=TRUE)
+# C) x=11:20; rbind(x,2*x,3*x)
+# D) x=1:40; matrix(3*x,20,2)
+
+x <- 1
+x
+
+#marks <- read.table("marks.txt", quote = "\"", comment.char = "")
+marks
+
+View(marks)
+class(marks)
+
+m<-matrix(marks$V1, 4, 7)
+m<-data.frame(t(m))
+m
+m[1,]
+
+m1<-m[2:nrow(m),]
+m1
+names(m1)<-c("Name","Homework","Midterm","Final")
+m1
+
+# m1$Homework <- as.integer(m1$Homework) не работает
+
+
+# перевести текст в  числа !ДОМАШНЕЕ ЗАДАНИЕ
+
+```
+
+# Functions
+
+```{r}
+#mean()
+#subset()
+#plot()
+#read.table()
+
+# функции нужны для
+# - модульность
+# - реплицируемость
+# - дебагинг (поиск ошибок)
+
+addone <- function(x){
+  x+1
+}
+
+addone(12)
+
+# x -- input
+# output 13
+
+# квадраты от 1 до 5
+sq_func <- function(){
+  for(i in 1:5){
+    print(i^2)
+  }
+}
+
+sq_func()
+
+# принимает A B C и возвращает произведение
+
+mult_func <- function(a,b,c){
+  a*b*c
+}
+
+# предварительно заданный input
+
+mult_func <- function(a=3,b=6){
+  result <- a*b
+  print(result)
+}
+
+mult_func()
+
+# lazy evaluation
+
+new_func <- function(a,b){
+  print(a^2)
+  print(a)
+  print(b)
+}
+
+# lazy evaluation не получилось
+
+# percent
+# input: числитель, знаменатель, точность округления
+calc_percent <- function(x,y,r){
+  round((x/y)*100, r)
+}
+
+calc_percent(27,80,1)
+
+calc_percent <- function(x,y,d){
+  dec<-x/y
+  round(dec*100, d)
+}
+
+# создание функции, в которой идет преобразование из футов в метры, дюйм в метры
+#input имя, масса, рост
+
+createPacientRec_fun <- function(full.name, weight, height){
+  name.list <- strsplit(full.name, split=" ")[[1]]
+  first.name <- name.list[1]
+  last.name <- name.list[2]
+  weightKg <- weight/2.2
+  heightM <- height*0.0254
+  bmi <- weightKg / (heightM^2)
+  list(first.name=first.name.last.name=last.name,weightKg=weightKg, heightM=heightM, bmi=bmi)
+}
+
+new2_func <- function(x){
+  c(mean(x),median(x),sd(x))
+}
+
+set.seed(1)
+x<-rnorm(100,5,2)
+new2_func(x)
+
+new3_func <- function(x){
+  matrix(c(c("mean","median","sd"),c(mean(x),median(x),sd(x))),nrow = 3)
+}
+
+new3_func(x)
+
+new4_func <- function(x){
+  c(mean = mean(x),median = median(x),sd = sd(x))
+}
+
+new4_func(x)
+
+# Логика условия
+
+grade_fun <- function(x){
+  if(x>=90){
+    gr<="A"
+  } else if (x>=80){
+    gr<-"B"
+  } else if (x>=70){
+    gr<-"D"
+  } else {
+    gr<-"F"
+  }
+  gr
+}
+
+grade_fun(78)
+
+Grades <- c(92,78,87,91,62)
+sapply(Grades,FUN=grade_fun)
+
+# return
+
+addone <- function(x){
+  return(x+1)
+}
+
+# если работает без return, то писать его не стоит
+
+# isPassingGrade(x)
+# return logical ; passing 50
+
+isPassingGrade <- function(x){
+  passed <- FALSE
+  if(x>=50){
+    passed <- TRUE
+  }
+  passed
+}
+
+isPassingGrade(49)
+
+# sendMessage
+# i -- int
+# print "Congratulations" / "Oh no"
+
+sendMessage <- function(x) {
+  message <- "Oh no"
+  if(isPassingGrade(x)){
+    message <- "Congratulations"
+  }
+  print(message)
+}
+
+sendMessage(49)
+
+# ifelse
+sendMessage <- function(x) print(ifelse(isPassingGrade(x),"Congratulations","Oh no"))
+
+# gradeSummary
+# in x - int
+# out list 1.letter.grade 2.passed
+
+gradeSummary <- function(x){
+  letter.grade <-"D"
+  if(x>=90){
+    letter.grade = "A"
+  } else if (x>=80) {
+    letter.grade = "B"
+  }
+  passed <- ifelse(x>=50,T,F)
+  list(letter.grade=letter.grade, passed=passed)
+}
+
+gradeSummary(80)
+
+
+x<- c(T,F)
+
+all(x)
+any(x)
+any(!x)
+all(!x) #always F if T in vector x
+
+```
+
