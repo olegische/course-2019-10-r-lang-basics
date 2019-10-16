@@ -4,6 +4,7 @@
 ## Введение в R
 <https://rstudio-pubs-static.s3.amazonaws.com/33285_9ffa5341065d4bff9607fd6ccba75d98.html>  
 <https://github.com/rstudio/cheatsheets/blob/master/base-r.pdf>  
+<https://github.com/olegische/course-2019-10-r-lang-basics/blob/master/kbase/pdf/rstudio-keyboard-shortcuts.pdf>  
 
 ## Rstudio & Markdown
 <https://github.com/rstudio/cheatsheets/blob/master/rstudio-ide.pdf>  
