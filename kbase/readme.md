@@ -22,12 +22,12 @@
 <https://habr.com/ru/post/248741/>  
 
 ## R & Python
-<https://github.com/rstudio/cheatsheets/blob/master/reticulate.pdf>
-<http://www.datasciencefree.com/python.pdf>
-<http://www.datasciencefree.com/numpy.pdf>
-<http://www.datasciencefree.com/pandas.pdf>
+<https://github.com/rstudio/cheatsheets/blob/master/reticulate.pdf>  
+<http://www.datasciencefree.com/python.pdf>  
+<http://www.datasciencefree.com/numpy.pdf>  
+<http://www.datasciencefree.com/pandas.pdf>  
 
 ## More cheatsheets
-<https://github.com/rstudio/cheatsheets>
-<https://rstudio.com/resources/cheatsheets/>
-<http://www.datasciencefree.com/cheatsheets.html>
+<https://github.com/rstudio/cheatsheets>  
+<https://rstudio.com/resources/cheatsheets/>  
+<http://www.datasciencefree.com/cheatsheets.html>  
