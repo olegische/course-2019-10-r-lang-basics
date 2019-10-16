@@ -9,7 +9,7 @@
 <https://github.com/rstudio/cheatsheets/blob/master/rstudio-ide.pdf>  
 <https://github.com/rstudio/cheatsheets/blob/master/rmarkdown-2.0.pdf>  
 
-## Визуализация данных 
+## Визуализация данных
 <https://github.com/rstudio/cheatsheets/blob/master/translations/russian/ggplot2-cheatsheet-2.1_ru.pdf>  
 
 ## Ресурсы по Data tidying:
@@ -20,3 +20,14 @@
 ### На русском
 <https://github.com/rstudio/cheatsheets/tree/master/translations/russian>  
 <https://habr.com/ru/post/248741/>  
+
+## R & Python
+<https://github.com/rstudio/cheatsheets/blob/master/reticulate.pdf>
+<http://www.datasciencefree.com/python.pdf>
+<http://www.datasciencefree.com/numpy.pdf>
+<http://www.datasciencefree.com/pandas.pdf>
+
+## More cheatsheets
+<https://github.com/rstudio/cheatsheets>
+<https://rstudio.com/resources/cheatsheets/>
+<http://www.datasciencefree.com/cheatsheets.html>
