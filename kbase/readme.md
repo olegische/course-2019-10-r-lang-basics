@@ -17,6 +17,6 @@ https://tidyr.tidyverse.org/
 https://github.com/rstudio/cheatsheets
 https://tidyr.tidyverse.org/articles/tidy-data.html
 
-На русском
+### На русском
 https://github.com/rstudio/cheatsheets/tree/master/translations/russian
 https://habr.com/ru/post/248741/
