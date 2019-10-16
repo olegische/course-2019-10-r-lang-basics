@@ -22,6 +22,8 @@
 <https://habr.com/ru/post/248741/>  
 
 ## R & Python
+<https://github.com/olegische/course-2019-10-r-lang-basics/blob/master/kbase/pdf/python-beginners.pdf>  
+<https://github.com/olegische/course-2019-10-r-lang-basics/blob/master/kbase/pdf/python-3.pdf>  
 <https://github.com/rstudio/cheatsheets/blob/master/reticulate.pdf>  
 <http://www.datasciencefree.com/python.pdf>  
 <http://www.datasciencefree.com/numpy.pdf>  
