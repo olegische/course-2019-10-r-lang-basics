@@ -16,7 +16,7 @@
 ## Визуализация данных
 <https://github.com/rstudio/cheatsheets/blob/master/translations/russian/ggplot2-cheatsheet-2.1_ru.pdf>  
 
-## Ресурсы по Data tidying:
+## Ресурсы по Data tidying
 <https://tidyr.tidyverse.org/>  
 <https://github.com/rstudio/cheatsheets>  
 <https://tidyr.tidyverse.org/articles/tidy-data.html>  
@@ -24,6 +24,9 @@
 ### На русском
 <https://github.com/rstudio/cheatsheets/tree/master/translations/russian>  
 <https://habr.com/ru/post/248741/>  
+
+## Data mining
+<https://ranalytics.github.io/data-mining/index.html>  
 
 ## R & Python
 <https://github.com/olegische/course-2019-10-r-lang-basics/blob/master/kbase/pdf/python-beginners.pdf>  
