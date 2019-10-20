@@ -6,6 +6,9 @@
 <https://github.com/rstudio/cheatsheets/blob/master/base-r.pdf>  
 <https://github.com/olegische/course-2019-10-r-lang-basics/blob/master/kbase/pdf/rstudio-keyboard-shortcuts.pdf>  
 
+## Advanced R
+<http://adv-r.had.co.nz/>  
+
 ## Rstudio & Markdown
 <https://github.com/rstudio/cheatsheets/blob/master/rstudio-ide.pdf>  
 <https://github.com/rstudio/cheatsheets/blob/master/rmarkdown-2.0.pdf>  
@@ -34,3 +37,6 @@
 <https://github.com/rstudio/cheatsheets>  
 <https://rstudio.com/resources/cheatsheets/>  
 <http://www.datasciencefree.com/cheatsheets.html>  
+
+## A User’s Guide to Network Analysis in R (rus)
+<https://github.com/olegische/course-2019-10-r-lang-basics/blob/master/kbase/pdf/a-users-guide-to-networkanalysis-in-r-rus.pdf>  
