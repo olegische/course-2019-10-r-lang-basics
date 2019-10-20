@@ -37,6 +37,3 @@
 <https://github.com/rstudio/cheatsheets>  
 <https://rstudio.com/resources/cheatsheets/>  
 <http://www.datasciencefree.com/cheatsheets.html>  
-
-## A User’s Guide to Network Analysis in R (rus)
-<https://github.com/olegische/course-2019-10-r-lang-basics/blob/master/kbase/pdf/a-users-guide-to-networkanalysis-in-r-rus.pdf>  
