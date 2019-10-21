@@ -1,0 +1,381 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+# Lecture 05 Tidy data
+
+```{r}
+library(dplyr)
+data("mtcars")
+str(mtcars)
+
+?mtcars
+
+## SELECT
+select(mtcars,hp)
+select(mtcars.hp,mpg,gear)
+select(mtcars,1:7)
+
+## FILTER
+filter(mtcars, wt>3.5)
+filter(mtcars, wt>3.5, carb==3)
+
+## ARRANGE (автоматическая сортировка по выбранной переменной)
+arrange(mtcars,gear)
+arrange(mtcars, -gear)
+arrange(mtcars, -gear,-carb,wt)
+
+## MUTATE (выборка по умолчанию не изменяется)
+mutate(mtcars, wt_cyl=wt/cyl)
+head(mtcars)
+#mtcars2<-mutate(mtcars, wt_cyl=wt/cyl)
+
+mutate(mtcars, wt_cyl=wt/cyl,inv_wt_cyl=1/wt_cyl)
+
+## SUMMARISE
+summarise(mtcars, min_hp=min(hp), mean_hp = mean(hp),
+          max_hp=max(hp), IQR_hp=IQR(hp))
+summary(mtcars$hp)
+
+## Group_by (полезный инструмент)
+group_by(mtcars,gear)  # input -- tibble
+Grouped <- group_by(mtcars,gear)
+
+summarise(Grouped, min_hp=min(hp), mean_hp = mean(hp),
+          max_hp=max(hp), IQR_hp=IQR(hp))
+
+Grouped <- group_by(mtcars,gear,cyl)
+
+Events$rate <- Events$total / Events$population * 100000
+
+# <=0.71
+filter(Events,rate<0.71)
+
+# штат, регион, рейт
+select(filter(Events, rate <= 0.71), state, region, rate)
+
+# добавить столбец (население в млн. чел)
+mutate(filter(Events, rate <= 0.71), pop_mln=population/1000000)
+
+# Добавить столбец ранг по переменной rate
+mutate(Events, pop=population/1000000, rank_rate=rank(rate))
+
+# вывести первые 5 строк (только штат и население)
+head(select(Events, state,population))
+
+# по штату нью йорк
+filter(Events, state=="New York")
+
+# по штату нью йорк и техас
+filter(Events, (state == "New York" | state == "Texas"))
+filter(Events, state %in% c("New York","Texas"))
+
+# создать переменную и записать все, кроме штата Флорида
+No_florida<-filter(Events, state!="Florida")
+No_florida
+
+# создать переменную кроме юга и записать все кроме южных штатов
+No_south<-filter(Events, region!="South")
+No_south
+
+# вывести описательную статистику по штатам северо-востока и запада
+summarise(filter(Events, region %in% c("Northeast","West")), 
+          min_pop=min(population), mean_pop=mean(population),
+          max_pop=max(population), IQR_pop=IQR(population),
+          min_t=min(total), mean_t=mean(total),
+          max_t=max(total), IQR_t=IQR(total),
+          min_r=min(rate), mean_r=mean(rate),
+          max_r=max(rate), IQR_r=IQR(rate))
+
+
+## PIPE
+mtcars %>% group_by(gear)
+
+mtcars %>% group_by(gear) %>% summarize(median_wt = median(wt))
+
+subsetCars <- mtcars %>%
+select(2:11) %>%
+ filter(wt>=2)
+subsetCars
+
+# группируем по передачам и цилиндрам, создаем вес/цилиндры, расположить (отсортировать) по созданной переменной
+mtcars %>% 
+group_by(gear,cyl) %>%
+mutate(wt_cyl=wt/cyl) %>%
+arrange(wt/cyl)
+
+16 %>% sqrt() %>% log2()
+log2(sqrt(16))
+
+# выбрать штат, регион, рейт отфильтровать <=0.71
+select(filter(Events, rate <= 0.71), state, region, rate)
+Events %>% 
+  select(state, region, rate) %>% 
+  filter(rate <= 0.71)
+
+Events <- mutate(Events,rank=rank(-rate))
+Events
+My_states <-  filter(Events, region %in% c("Northeast", "West") & rate < 1)
+select(My_states,state,rate,rank)
+
+Events %>% 
+  mutate(rank=rank(-rate)) %>%
+  filter(region %in% c("Northeast", "West") & rate < 1) %>%
+  select(state,rate,rank)
+
+
+library(dslabs)
+data("heights")
+str(heights)
+# отфильтрованный рост женщин с саммери по среднему и ст отклоненимю
+s <- heights %>%
+  filter(sex=="Female") %>%
+  summarize(mean_fem=mean(height),sd_fem = sd(height))
+s$mean_fem
+s1 <- heights %>%
+  filter(sex=="Female") %>%
+  summarize(median_fem=median(height), 
+            min_fem = min(height), 
+            max_fem = max(height))
+s1
+
+# min,mean,max Одной командой
+s1 <- heights %>%
+  filter(sex=="Female") %>%
+  summarize(range = quantile(hights$height,c(0,0.5,1)))
+# ошибка, три значение нельзя, только одно
+# решение
+my_sum <- function(dat){
+  x <- quantile(dat$heights,c(0,0.5,1))
+  data_frame(min=x[1],mean=x[2],max=x[3])
+}
+heights %>% group_by(sex) %>% my_sum
+
+IQR = IQR(mtcars$hp)
+IQR
+
+# создать Quant(x,0.25)
+x<-1:10
+x
+quantile(x)
+
+# создать Quant(x,0.25) дающую вывод quantile(x)
+# если будет ошибка, то
+x <- rnorm(11)
+#вывод не будет совпадать
+# !!! HOMEWORK
+Quant <- function(x,q){
+  
+}
+
+## PULL
+class(Events)
+Us_Event_rate <- Events %>%
+  summarize(rate=sum(total)/sum(population)*1000000)
+Us_Event_rate %>% pull(rate) # возвращает число или вектор
+Us_Event_rate$rate # может вернуть data.frame
+class(Us_Event_rate$rate)
+
+# сгруппировать heights по полу, вывести таблицу из среднего и стандартного отклонения по росту без фильтра
+s <- heights %>%
+  group_by(sex) %>%
+  summarize(mean_fem=mean(height),sd_fem = sd(height))
+s
+
+# Events по региону и медиана
+Events %>%
+  group_by(region) %>%
+  summarize(median=median(rate))
+
+# Отсортировать по населению
+# затем по rate в обратном порядке
+# затем вывести первые 10 строк в rate
+Events %>%
+  arrange(population,-rate) %>%
+#  head(rate,10) #не работает
+  top_n(10,rate)
+
+library(NHANES)
+data("NHANES")
+str(NHANES)
+View(NHANES)
+
+# Bigdata -- то, что не влезает в память рабочей станции
+# BP -- кровяное давление
+# вывести статистику (sd, mean) по давлению для лиц 20-29
+# сохранить sd, mean в ref (BPSysAve)
+## data("ne_example")
+
+
+NHANES %>%
+  filter(AgeDecade == " 20-29") %>%
+  summarise(mean_bpsys=mean(BPSysAve,na.rm=T),sd_bpsys=sd(BPSysAve,na.rm=T))
+
+NHANES %>%
+  filter(Age >= 20 & Age <= 29) %>%
+  summarise(mean_bpsys=mean(BPSysAve,na.rm=T),sd_bpsys=sd(BPSysAve,na.rm=T))
+
+NHANES %>%
+  filter(Age == (21:28)) %>%
+  summarise(mean_bpsys=mean(BPSysAve,na.rm=T),sd_bpsys=sd(BPSysAve,na.rm=T))
+
+NHANES %>%
+  filter(AgeDecade == " 20-29") %>%
+  select(BPSysAve) %>%
+  summarise(mean_bpsys=mean(BPSysAve,na.rm=T),
+            sd_bpsys=sd(BPSysAve,na.rm=T))
+
+# сохранить sd, mean в ref_avg (BPSysAve)
+ref_avg <- NHANES %>%
+  filter(AgeDecade == " 20-29") %>%
+  select(BPSysAve) %>%
+  summarise(mean_bpsys=mean(BPSysAve,na.rm=T),
+            sd_bpsys=sd(BPSysAve,na.rm=T))
+
+pull(ref_avg,mean_bpsys)
+# pipe для переменной ref_avg, затем достать переменную pull
+ref_avg <-NHANES %>% filter(Age == (20:29)) %>% summarise(mean(BPSysAve, na.rm = T))
+ref_avg
+ref_avg %>% pull()
+
+# inline code min и max давления в этой группе
+
+# функция -- спрашивает у пользователя возраст, выводит min max по возрасту
+x <- readline(prompt = "Введите возраст: ")
+as.numeric(x)
+
+x <- as.numeric(readline(prompt = "Введите возраст: "))
+x <- as.numeric(x)
+x
+
+Min_max_fun <- function(){
+  x <- as.numeric(readline(prompt = "Введите возраст: "))
+  x <- as.numeric(x)
+  Min <- NHANES %>%
+    filter(Age == x) %>%
+    select(BPSysAve) %>%
+    min(na.rm = T)
+  Max <- NHANES %>%
+    filter(Age == x) %>%
+    select(BPSysAve) %>%
+    max(na.rm = T)
+  result <- list(min=Min, max=Max)
+}
+
+min_max <- Min_max_fun()
+min_max
+min_max$min
+min_max$max
+
+# группировка по полу для каждого возраста посчитать среднее по давлению
+
+NHANES %>%
+  group_by(Gender, Age) %>%
+  filter(Age > 7) %>%
+  select(BPSysAve) %>%
+  summarise(mean(BPSysAve, na.rm= T))
+
+# для мужчин 40-49 лет сравнить Syst давление по расовой принадлежности, отсортировать полученную таблицу по возрастанию среднего давления 
+
+NHANES %>%
+  filter(AgeDecade == " 40-49" & Gender == "male") %>%
+  group_by(Race1) %>%
+  select(BPSysAve) %>% 
+  summarise(mean=mean(BPSysAve, na.rm= T)) %>%
+  arrange(mean)
+
+NHANES %>% 
+  filter(AgeDecade == " 40-49") %>% 
+  select(Race1, BPSysAve) %>% 
+  group_by(Race1) %>% 
+  summarise(mean=mean(BPSysAve, na.rm= T)) %>% 
+  arrange(mean)
+
+## . operator
+filter(Events,region=="South") %>%
+  mutate(rate = total/population * 10^5) %>%
+  summarise(median = median(rate)) %>%
+  pull(median)
+
+rates <- filter(Events,region=="South") %>%
+  mutate(rate = total/population * 10^5) %>%
+  .$rate
+median(rates)
+
+
+heights %>% 
+  group_by(sex) %>% 
+  my_sum
+
+heights %>% 
+  group_by(sex) %>% 
+  do(my_sum(.))
+
+## Tibble
+myDf <- data.frame(x=1:4,
+                   y=c("London","Beijing","Las Vegas","Berlin"))
+
+myDfNotFactor <- data.frame(x=1:4,
+                   y=c("London","Beijing","Las Vegas","Berlin"),
+                   stringsAsFactors = F)
+myDf
+class(myDf$y)
+class(myDfNotFactor$y)
+
+myTib <- tibble(x=1:4,
+                y=c("London","Beijing","Las Vegas","Berlin"))
+class(myTib)
+class(myTib$y)
+
+#data("starwars")
+#as.data.frame(starwars)
+#[,]
+#[[]]
+#as.data.frame(starwars[,1])
+#as.data.frame(starwars[[1]])
+#starwars[,1]
+
+myDf[,1:2] # df
+myDf[,1] # вектор или df?
+myTib[,1] # tib
+myTib[[1]] # вектор -- принудительно
+
+myTib$y # символы
+myDf$y # факторы levels
+
+# Создание tibble
+seqTibble <- tibble(nItems = c(12,45,107), cost=c(0.5,1.2,1.8),
+                    totalWorth = nItems*cost)
+seqTibble
+
+seqDf <- data.frame(nItems = c(12,45,107), cost=c(0.5,1.2,1.8),
+                    totalWorth = nItems*cost)
+seqDf # Ошибка
+
+library(tibble)
+data("CO2")
+CO2tib <- as_tibble(CO2)
+summary(CO2tib)
+CO2tib
+```
+
+По группе лиц возраста 20-29 лет мы зарегистрировали минимум = `r NHANES %>%  filter(AgeDecade == " 20-29") %>%  select(BPSysAve) %>%  min(na.rm = T)` и максимум = `r NHANES %>%  filter(AgeDecade == " 20-29") %>%  select(BPSysAve) %>%  max(na.rm = T)` кровяного давления (Syst)

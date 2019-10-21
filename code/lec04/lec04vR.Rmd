@@ -1,0 +1,354 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+
+
+# lecture 03
+
+```{r}
+# fib function
+
+#создать ф-ю, кот вычисл. посл-ть Фибоначчи
+fib <- function(x) {
+  if(x>2){
+    y<-fib(x-1)
+    c(y,sum(tail(y,2)))
+  }
+  else rep(1,x)
+}
+
+x <- fib(30)
+
+x
+
+```
+# function as objects
+
+```{r}
+a <- function(n) function(a) runif(a)
+b <- a(1)
+
+b(100)
+
+a<- list()
+
+b <- function(i) { i; function() rnorm(i)}
+
+for (i in 1:10)
+  a[[i]] <-b(i)
+
+a[[3]]()
+
+# гипотеза Сиракуз
+# Возьмем любое натуральное число. Если оно четное - разделим его пополам, если нечетное - умножим на 3, прибавим 1 и разделим пополам. Повторим эти действия с вновь полученным числом. Гипотеза гласит, что независимо от выбора первого числа рано или поздно мы получим 1.
+
+#for list!!!
+
+d<-data.frame()
+for(i in 20:30) {
+  n=i
+  z=1
+  while(n!=1){
+    ifelse(n%%2 == 0, n <- n/2, n <- 3*n+1)
+    d[z,i-19] = n
+    z=z+1
+  }
+}
+
+length(d$v8)
+d$v8[111]
+
+# решение линейных уровнений
+x = matrix(c(1,3,2,1,-2,1,1,1,-1),3,3)
+x
+y = matrix(c(6,2,1),3,1)
+y
+solve(x) %*% y
+
+# 3a + 4b - 5c + d = 10
+# 2a + 2b + 2c - d = 5
+# a - b + 5c - 5d = 7
+# 5a + d = 4
+
+x <- matrix(c(3,4,-5,1,2,2,2,-1,1,-1,5,-5,5,0,0,1), byrow=T, 4, 4)
+x
+y <- c(10,5,7,4)
+y
+solve(x) %*% y
+
+X <- matrix(c(1,2,3,4,5,6),2,3)
+X
+t( t(X) )
+# X %*% matrix(1,ncol(X) )
+X*1
+X%*%diag(ncol(X))
+
+
+a <- matrix(1:12, nrow=4)
+b <- matrix(1:15, nrow=3)
+
+c <- (a %*% b)
+c
+
+sum(c[3,] * b[2])
+
+```
+
+```{r}
+library(UsingR)
+
+y <- father.son$sheight
+
+hist(y)
+mean(y)
+
+N <- length(y)
+Y <- matrix(y,N,1)
+A <- matrix(1,N,1)
+Y
+A
+
+# посчитать матожидание без mean
+y_s <- (t(Y) %*% A)/N
+y_s
+y_s <- crossprod(A,Y)/N
+y_s
+
+# посчитать дисперсию
+MM<-matrix(y_s,N,1)
+y_d<-crossprod(Y-MM)/N
+y_d
+var(y)
+sd(y)^2
+
+
+x<-rnorm(16)
+x<-matrix(x,4,4)
+dim(x) <- c(4,4)
+x
+solve(x)
+solve(x) %*% x # эквивалент взятия обратной матрицы
+# можно вычислять МНК
+
+# создание функции для выборки 80/20 (тренировочная/тестовая)
+
+data(airquality)
+
+str(airquality)
+nrow(airquality)
+
+split_data <- function(df,train = T){
+  # df - выборка
+  # logic train/test
+  length <- nrow(df)
+  total_row <- length*0.8
+  split <- 1:total_row
+  if(train){
+    train_df <- df[split,]
+    return(train_df)
+  }
+  test_df<-df[-split,]
+  return(test_df)
+}
+
+t_df<-split_data(airquality,F)
+head(t_df)
+
+#length <- nrow(airquality)
+#total_row <- length*0.8
+#split <- 1:total_row
+#train_df <- airquality[split,]
+#head(train_df)
+#test_df<-airquality[-split]
+#head(test_df)
+
+# зачем делить выборку? обучение, переобучение, результативность (делим на тренировочную, тестовую, и еще какую-то третью) 80/20
+# 50/50 на 50 ансамбль моделей
+
+```
+# векторные функции (apply)
+
+```{r}
+#apply(x, MARGIN = , FUN, ...)
+
+# x -- vec, matrix, array
+# MARGIN 1 or 2: row or col; c(1,2) -- row and col
+# FUN встроенная или собственная
+# ... - элементы, входящие в input FUN
+
+#lapply()
+#sapply(list, function)
+#tapply(vector, index, function)
+
+m1 <- matrix(c(1:10),nrow = 5)
+m1
+
+a_m1 <-  apply(m1, 2, sum)
+a_m1
+
+data("mtcars")
+str(mtcars)
+
+#1 d<-()
+#2 mean
+
+#m <- matrix(c(mtcars$mpg, mtcars$hp, mtcars$wt), ncol = 3, )
+#apply(d, 2, mean)
+
+d1<-apply(mtcars,2,mean)
+class(d1)
+d1[c("mpg","hp","wt")]
+
+d1<-apply(mtcars,2,mean)
+class(d1)
+d1[c("mpg","hp","wt")]
+
+d2<-apply(mtcars,2,sd)
+d2[c("mpg","hp","wt")]
+
+
+m1 <- matrix(1:9, nrow = 3)
+m1
+
+res1 <- apply(m1,1,mean)
+res2 <- apply(m1,2,mean)
+
+is.vector(res1)
+
+# кумулятивная сумма
+# cumsum
+
+res3 <- apply(m1,1,cumsum)
+is.matrix(res3)
+
+
+check <- function(x){
+  return(x[x>5])
+}
+
+m1
+check(m1)
+
+class(apply(m1, 1, check))
+
+ratings <- c(4.2, 4.4, 3.4, 3.9, 5, 4.1, 3.2, 3.9, 4.6, 4.8, 5, 4, 4.5, 3.9, 4.7, 3.6)
+
+employee.mat <- matrix(ratings,byrow = T,nrow = 4,dimnames = 
+  list(c("Quarter1","Quarter2","Quarter3","Quarter4"),c("Hari","Shri","John","Albert")))
+
+employee.mat
+
+employee <- as.data.frame(employee.mat)
+class(employee)
+
+apply(employee,1,sum)
+apply(employee,1,cumsum)
+
+check <- function(x){
+  return(x[x>4.2])
+}
+
+apply(employee,1,check)
+
+
+#lapply(list, function)
+# x -- vec, matrix, array, list
+# out -- list
+
+res <- lapply(ratings, mean)
+res
+
+list1 <- list(maths=c(64,45,89,67), eng=c(79,84,62,80),
+         phys=c(68,72,69,80),chem=c(99,91,84,89))
+
+res <- lapply(list1, mean)
+res
+
+res <- lapply(employee, mean)
+res
+res <- lapply(employee, check)
+res
+
+# Нахождение выбросов (значение, отстоящее от ср(мо) на 2 ст отклонения| >2sd
+
+#out <- function(x){
+  # если выбросов нет -- выбросов нет
+  # если есть -- кол-во выбросов
+  # x - вектор
+#  count <- as.numeric((x - mean(x)) > (sd(x)*2))
+#  if (count > 0){
+#    return(count)
+#  }
+#  return("выбросов нет")
+#}
+
+out <- function(x,na.rm=F){
+  # если выбросов нет -- выбросов нет
+  # если есть -- кол-во выбросов
+  # x - вектор
+  count <- x[abs((x - mean(x)) > (2*sd(x)))]
+  if (length(count) > 0){
+    return(count)
+  }
+  return("выбросов нет")
+}
+
+d<-mtcars
+apply(d,2,out)
+
+d<-airquality
+apply(d,2,out1,na.rm=T)
+
+out1 <- function(x,na.rm=F){
+  # если выбросов нет -- выбросов нет
+  # если есть -- кол-во выбросов
+  # x - вектор
+  count <- x[abs(x[!is.na(x)] - mean(x, na.rm = na.rm) > 2*sd(x, na.rm = na.rm))]
+  if (length(count) > 0){
+    return(count)
+  }
+  return("выбросов нет")
+}
+
+#tapply()
+#x -- объект(вектор)
+# Index -- список,  содержащий вектор
+
+x1<-rnorm(10)
+x2 <- sample(1:2,10,replace = T)
+cbind(x1,x2)
+tapply(x1, x2, sum)
+
+data("iris")
+head(iris)
+
+#median
+
+tapply(iris$Sepal.Length, iris$Species, median)
+
+library(MASS)
+
+head(Cars93)
+#среднее Mpg.City, index -- Origin, DriveTrain
+
+tapply(Cars93$MPG.city, INDEX = Cars93[c("Origin","DriveTrain")],FUN = mean)
+
+```
+
