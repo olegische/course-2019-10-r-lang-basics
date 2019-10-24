@@ -6,6 +6,9 @@
 <https://github.com/rstudio/cheatsheets/blob/master/base-r.pdf>  
 <https://github.com/olegische/course-2019-10-r-lang-basics/blob/master/kbase/pdf/rstudio-keyboard-shortcuts.pdf>  
 
+## R colors
+<http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf>  
+
 ## Advanced R
 <http://adv-r.had.co.nz/>  
 
