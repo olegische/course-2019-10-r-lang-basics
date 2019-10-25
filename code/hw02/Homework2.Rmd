@@ -8,6 +8,8 @@ output:
     toc_depth: 3
     theme: paper
     highlight: tango
+editor_options: 
+  chunk_output_type: console
 ---
 
 ##### Для выполнения задания следуйте следующему:
@@ -91,9 +93,9 @@ list(avg = avg2(x, a, na.rm = naRm),
 ```{r, eval=FALSE}
 # m - input 
 vector <- function(length) {
-  v <- c()
-  for(i in 1:length) {
-    v <- c(v,sum(c(v,i)))
+  v <- 1
+  for(i in 2:length) {
+    v[i] <- sum(i,v[(i-1)])
   }
   return(v)
 }
@@ -110,7 +112,7 @@ s
 
 ```{r}
 # График, функция суммы вызывается внутри функции построения графика
-plot(1:m, s, type="l", xlab="длина ряда", ylab="сумма ряда")
+#plot(1:m, s, type="l", xlab="длина ряда", ylab="сумма ряда")
 ```
 
 ##### (e) Еще на создание функции. 
@@ -118,15 +120,27 @@ plot(1:m, s, type="l", xlab="длина ряда", ylab="сумма ряда")
 
 ```{r}
 altman <- function(x,y) {
-  # не понятно словосочетание "график разности их сумм"
+  # задание непонятно
 }
+altman(1:10,c(20,2,3,4,1))
 ```
 
 
 ##### (f) sapply.
 Повторите задание **(c)** используя `sapply`
 ```{r eval=FALSE}
+vector <- function(length) {
+  v <- 1
+  for(i in 2:length) {
+    v[i] <- sapply(v[(i-1)], sum, i)
+  }
+  return(v)
+}
 
+#m <- as.numeric(readline(prompt = "Enter range length: "))
+m <- 10
+s <- vector(length=m)
+s
 ```
 
 ##### (g) Подтверждение формулы.
@@ -135,16 +149,37 @@ altman <- function(x,y) {
 
 ```{r eval=FALSE}
 # постройте график
+sumRange <- function(n) {
+  v <- 1
+  for(i in 2:n) {
+    v[i] <- sapply(v[(i-1)], sum, i)
+  }
+  return(v)
+}
 
-lines(n, n*(n+1)/2) # нанесение на график линии
-
+n <- 10
+s_n <- sumRange(n)
+plot(1:n, s_n)
+#lines(n, n*(n+1)/2) # нанесение на график линии
 ```
 
 ##### (h) Подтверждение формулы.
 В этот раз вычисляется сумма  ${{S}_{n}}={{1}^{2}}+{{2}^{2}}+...+{{n}^{2}}$. Создайте функцию для ее вычисления, постройте график и нанесите на график линию c помощью команды `lines`. 
 
 ```{r }
+sumRange2 <- function(n) {
+  v <- 1^2
+  for(i in 2:n) {
+    v[i] <- sapply(v[(i-1)], sum, i^2)
+  }
+  return(v)
+}
 
+n <- 10
+s_n2 <- sumRange2(n)
+plot(1:n, s_n2)
+s_n2
+#lines(n, n*(n+1)(2*n+1)/6)
 ```
 
 ### Задание 2: Выборка
@@ -154,7 +189,9 @@ lines(n, n*(n+1)/2) # нанесение на график линии
 
 ```{r eval=FALSE}
 # дополните код
-income <- read.csv()
+setwd("~/devel/courses/r-basics/code/hw02")
+income <- read.csv("income.csv")
+income$X <- NULL
 
 # задайте имена переменным
 colnames(income) <- c("age", "workclass", "fnlwgt", "education", "education.years", "marital.status", "occupation", "relationship", "race", "sex", "capital.gain", "capital.loss", "hours.per.week", "native.country", "income.bracket")
@@ -166,8 +203,10 @@ colnames(income) <- c("age", "workclass", "fnlwgt", "education", "education.year
 Используя функцияю `table()` для вывода таблицы сопряженности по наблюдениям через **marital status** и* **sex**
 
 ```{r }
-# Отредактируйте
-
+income <- read.csv("income.csv")
+income$X <- NULL
+colnames(income) <- c("age", "workclass", "fnlwgt", "education", "education.years", "marital.status", "occupation", "relationship", "race", "sex", "capital.gain", "capital.loss", "hours.per.week", "native.country", "income.bracket")
+table(income$marital.status, income$sex)
 ```
 
 
@@ -176,13 +215,16 @@ colnames(income) <- c("age", "workclass", "fnlwgt", "education", "education.year
 
 ```{r }
 # Отредактируйте
+prop.table(table(income$marital.status, income$sex), 2)
 ```
 
 ##### (с) Используйте задание (b) для ответа на следующие вопросы. Согласно выборки, имеют ли женщины большую вероятность, чем мужчины быть `Married`? Большую вероятность быть `Widowed`? (Для ответа вычислите процент индивидов по каждой группе). Используйте блоки inline code для ответа на вопросы.
 
 <font color="#157515"><b>
 
-Замените текст ответом (не удаляйте html теги)
+Согласно выборки, женщины могут быть `Married` с вероятностью `r tabl <- prop.table(table(income$marital.status, income$sex), 2); round(sum(tabl["Married-AF-spouse","Female"], tabl["Married-civ-spouse","Female"], tabl["Married-spouse-absent","Female"])*100, 2)`%, в то время, как мужчины могут быть `Married` с вероятностью `r tabl <- prop.table(table(income$marital.status, income$sex), 2); round(sum(tabl["Married-AF-spouse","Male"], tabl["Married-civ-spouse","Male"], tabl["Married-spouse-absent","Male"])*100, 2)`%.
+
+При этом доля женщин со статусом `Widowed` составляет `r tabl <- prop.table(table(income$marital.status, income$sex), 2); round(tabl["Widowed","Female"]*100, 2)`% от общего числа женщин. Доля же мужчин со статусом `Widowed` составляет только `r tabl <- prop.table(table(income$marital.status, income$sex), 2); round(tabl["Widowed","Male"]*100, 2)`% от общего числа.
 
 </font></b>
 
@@ -191,7 +233,7 @@ colnames(income) <- c("age", "workclass", "fnlwgt", "education", "education.year
 Используйте `tapply()` для вывода таблицы, показывающей среднее значение **education** (в годах) по категориям **marital status** и **sex**.
 
 ```{r}
-# Отредактируйте
+tapply(income$education.years, list(income$marital.status, income$sex), mean)
 ```
 
 ### Задание 3: Более сложный пример на `tapply()`
@@ -203,7 +245,9 @@ colnames(income) <- c("age", "workclass", "fnlwgt", "education", "education.year
 Используйте `tapply()` для вывода таблицы, показывающей общее число полисодержателей по району и возрасту. Сохраните эту таблицу в переменную, а также выведите ее на экран.
 
 ```{r}
-# Отредактируйте
+library(MASS)
+insH <- tapply(Insurance$Holders, INDEX = Insurance[c("District", "Age")], sum)
+insH
 ```
 
 #####(b) Число претензий по району и возрасту
@@ -211,7 +255,9 @@ colnames(income) <- c("age", "workclass", "fnlwgt", "education", "education.year
 Используйте `tapply()` для вывода таблицы, показывающей общее число претензий (Claims). Сохраните данную таблицу в переменную, а также выведите ее на экран.
 
 ```{r}
-# Отредактируйте
+# Неизвестно по какому фактору
+insC <- tapply(Insurance$Claims, INDEX = Insurance[c("District", "Age")], sum)
+insC
 ```
 
 #####(c) Уровень претензий на полисодержателя по району и возрасту
@@ -219,7 +265,8 @@ colnames(income) <- c("age", "workclass", "fnlwgt", "education", "education.year
 Используйте ответы из заданий  **(a)** и **(b)** для вывода таблицы, показывающей уролвень претензий на полисодержателя по району и возрасту
 
 ```{r}
-# Отредактируйте
+aCH <- apply(insC/insH, 2, mean); for(i in 2:length(aCH)) {z <- aCH[i]-aCH[i-1]}; round(abs(mean(z)), 3)*100
+
 ```
 
 Tip: *Если страховая компания имеет 120 тыс. полисодержателей и получает 14 тыс претензий, то уровень равен 14000/120000 = `r round(14000/120000,3)`*
@@ -228,7 +275,7 @@ Tip: *Если страховая компания имеет 120 тыс. пол
 
 <font color="#157515"><b>
 
-Замените текст ответом. (не удаляйте html теги)
+Количество претензий на полисодержателя снижается в среднем на `r aCH <- apply(insC/insH, 2, mean); for(i in 2:length(aCH)) {z <- aCH[i]-aCH[i-1]}; round(abs(mean(z)), 3)*100`% каждые 5 лет в периоде между 25-ю и 35-ю годами.
 
 </font></b>
 
@@ -247,8 +294,19 @@ Tip: *Если страховая компания имеет 120 тыс. пол
 
 # Заполните и добавьте для меня комментарии
 trimmedMean <- function(x, s = 0, l = 0) {
-  # Напишите код здесь
+  # Выдаем ошибку, если длина вектора не только меньше суммы s и l, 
+  # но и если равна ей (пустой диапазон).
+  if(length(x) <= sum(s,l)) {
+    message("Sorry, can't calculate trimmed mean. Try another values.")
+  }
+  # Для удаления наименьших и наибольших значений 
+  # (1) сортируем вектор, 
+  # (2) берем его срез, начиная с индекса 1+s, и заканчивая индексом length(x)-l,
+  # (3) вычисляем среднее по срезу.
+  mean(sort(x)[(1+s):(length(x)-l)])
 }
+x <- c(1, 7, 3, 2, 5, 0.5, 9, 10)
+trimmedMean(x,s=1,l=2)
 ```
 
 **Note:** Обратите внимание, что `s = 0` и `l = 0` специфицированы в input функции. Если пользователь не указывает их в запросе, то рассчитывается обычное среднее.
@@ -271,13 +329,25 @@ hist(list.random$z, breaks = 20, col = 'steelblue')
 Используя цикл `for` и функцию из задания **(a)**, создайте вектор, элементы которого будут ограниченными средними векторов в  `list.random`, взяв за `s = 5` и `l = 5`. 
 
 ```{r}
-# Отредактируйте
+count <- 1
+res1 <- c()
+for(i in 1:length(names(list.random))) {
+  res1[count] <- trimmedMean(list.random[[i]],s=5,l=5)
+  count <- count + 1
+}
+res1
 ```
  
 ##### (c) Вычислите неограниченные средние для векторов из списка. Как можно их сравнить с ограниченными средними из задания (b)? Объясните полученный результат. 
 
 ```{r}
-# Отредактируйте
+count <- 1
+res2 <- c()
+for(i in 1:length(names(list.random))) {
+  res2[count] <- mean(list.random[[i]])
+  count <- count + 1
+}
+res2
 ```
 
 **Объяснение:** 
