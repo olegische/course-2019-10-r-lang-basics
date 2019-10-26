@@ -1,0 +1,288 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+```{r}
+#HW
+#par(mfrow=c(1,1))
+#abline
+#lines(function(n){})
+# запросить пояснения по altman график Альтмана
+# https://en.wikipedia.org/wiki/Bland–Altman_plot
+```
+
+# Lecture 06
+```{r}
+# всегда лучше загружать
+library(dplyr) #pipe
+library(tidyverse)
+
+library(tibble)
+data("CO2")
+CO2tib <- as_tibble(CO2)
+summary(CO2tib)
+CO2tib
+
+selectedData <- select(CO2tib,c(1:3,5))
+head(selectedData)
+
+filteredData <- filter(selectedData, uptake > 16)
+groupedData <- selectedData %>% group_by(Plant)
+head(groupedData)
+
+summarizedData <- groupedData %>% 
+  summarize(meanUp = mean(uptake),sdUp = sd(uptake))
+head(summarizedData)
+
+# CV - коэффициент вариации
+mutatedData <- summarizedData %>% mutate(CV = (sdUp/meanUp)*100)
+head(mutatedData)
+
+arrangedData <- mutatedData %>% arrange(CV)
+head(arrangedData)
+
+arrangedData <- CO2tib %>% 
+  select(c(1:3,5)) %>%
+  filter(uptake > 16) %>%
+  group_by(Plant) %>%
+  summarize(meanUp = mean(uptake),sdUp = sd(uptake)) %>%
+  mutate(CV = (sdUp/meanUp)*100) %>%
+  arrange(CV)
+
+head(arrangedData)
+
+patientData <- tibble(Patient = c("A", "B", "C"),
+                      Month0 = c(21,17,29),
+                      Month3 = c(20,21,27),
+                      Month6 = c(21,22,23))
+
+patientData
+
+#Patient  Month   BMI
+#A        month0  21
+#B        month0  17
+
+# gather development is complete
+# Сбор данных
+gather(patientData, key=Month, value=BMI, -Patient)
+gather(patientData, key=Month, value=BMI, Month0:Month6)
+gather(patientData, key=Month, value=BMI, c("Month0", "Month3", "Month6"))
+
+# через pivot_longer
+pivot_longer(patientData, names_to = "Month", c("Month0", "Month3", "Month6"), values_to = "BMI")
+
+tudyPatientData <- gather(patientData, key=Month, value=BMI, -Patient)
+
+# Перевести в wide формат
+widePatientData <- spread(tudyPatientData, key = "Month", value = "BMI")
+
+# через pivot_wider
+pivot_wider(tidyPatientData, names_from = "Month", values_from = "BMI")
+
+
+library(tidyverse)
+glimpse(x = diamonds)
+
+# средняя цена алмаза с идеальной огранкой
+mean((diamonds %>% filter(cut == "Ideal"))$price)
+
+# средняя цена алмаза с каждым типом огранки
+tapply(diamonds$price, INDEX = diamonds["cut"], mean)
+
+# средний размер и цена каждого типа огранки алмазов цвета "I"
+diamonds %>% 
+  filter(color == "I") %>%
+  group_by(cut) %>%
+  summarise(mean(price), mean(carat))  
+
+#test_data <- as.data.frame(list(V1 = c(NA,NA,NA,NA,13,12, ...),
+#                                V2 = c(NA,9,8,NA, ...)))
+
+replaceNa <- function(df) {
+  for(i in 1:length(names(df))) {
+    df[[i]][which(is.na(df[[i]]))] <- mean(df[[i]],na.rm = T)
+  }
+  return(df)
+}
+
+test_data <- as.data.frame(list(V1 = c(NA, NA, NA, NA, 13, 12, 9, 10, 8, 9, 11, 11, 10, 12, 9), V2 = c(NA, 12, 8, NA, 11, 11, 9, 8, 8, 10, 10, 11, 10, 10, 10), V3 = c(NA, 5, NA, 13, 12, 11, 11, 14, 8, 12, 8, 8, 10, 10, 8), V4 = c(10, 10, 10, 10, 13, 10, 11, 7, 12, 10, 7, 10, 13, 10, 9)))
+
+# векторные операции -- операции типа apply
+na_rm_best <- function(x) {
+  Na2mean <- function(x) replace(x,is.na(x), mean(x, na.rm = T))
+  replace(x, T, lapply(x, Na2mean))
+}
+na_rm_best(test_data)
+# так же полезно сравнивать скорость выполения операций на больших выборках
+
+# изменение скорости выполнения
+system.time(for(i in 1:100000){
+  rnorm(1000)
+})
+
+system.time(for(i in 1:100000){
+  na_rm_best(test_data)
+})
+
+system.time(for(i in 1:100000){
+  replaceNa(test_data)
+})
+
+system.time(replicate(100000, rnorm(1000)))
+
+library(pracma)
+tic()
+for(i in 1:100) mad(runif(1000)) #kill time
+toc()
+
+tic()
+replicate(100000, rnorm(1000))
+toc()
+
+
+fun1 <- function(x,y){
+  if(x > y){
+    message("x > y")
+  } else if(x < y) {
+    message("x < y")
+  } else {
+    message("x == y")
+  }
+}
+
+fun_2<-function(x,y){
+  ifelse(x > y, print(">"),      ifelse(x==y,  print("="),       print("<")))
+}
+
+fun2 <- function(x,y){
+  ifelse(x > y, message("x > y"),ifelse(x < y, message("x < y"), message("x == y")))
+}
+
+fun2(10,12)
+
+
+library(purrr)
+listofNumerics <- list(a = rnorm(5),
+                       b = rnorm(9),
+                       c = rnorm(10))
+listofNumerics
+elementsLength <- vector("list", length = 3)
+elementsLength
+
+# elementsLength заполнить длиной listofNumerics
+
+for(i in 1:length(names(listofNumerics))) {
+  elementsLength[i] <- length(listofNumerics[[i]])
+}
+elementsLength
+
+map(listofNumerics, length)
+map_int(listofNumerics, length)
+map_chr(listofNumerics, length)
+#map_lgl(listofNumerics, length) # error
+
+listofNumerics$a %>% mean()
+listofNumerics$b %>% mean()
+listofNumerics$c %>% mean()
+
+my_list <- map(listofNumerics, mean)
+
+my_list <- listofNumerics %>% map(mean)
+
+# умножить каждый элемент на 2 сделать в map
+# anonymous function
+# ~ -- автономная функция (не треб прописывания function)
+# . -- применить ко всем элементам
+my_list %>% map(~ . * 2)
+my_list %>% map_dbl(~ . * 2)
+my_list %>% map_lgl(is.numeric)
+my_list %>% map_chr(is.numeric)
+my_list %>% map_int(is.numeric)
+
+data("mtcars")
+# tibble
+tMtCats <- mtcars %>% as_tibble()
+# summary
+summary(tMtCats)
+
+# выбрать столбца qsec и vs
+# после выбрать машины кроме с 8 цилиндрами
+tMtCats %>% 
+  select(-qsec,-vs) %>%
+  filter(cyl != 8)
+
+# сгруппировать по передачам, отсуммировать медианные значения mpg dist
+# создать новую переменную mpg / медиана disp
+
+tMtCats %>% 
+  group_by(gear) %>%
+  summarize(median(mpg), median(disp)) %>%
+  mutate(mpg_med_disp=`median(mpg)`/`median(disp)`)
+
+# собрать столбцы с 8 - 11 в пару key-value. Результат tibble 128*9
+tMtCats %>% 
+  gather(key = Key, value = Value, 8:11)
+
+tMtCats %>% 
+  gather(key = "variable", value = "value", 8:11)
+
+# Вернуть логический вектор по каждому столбцу, где TRUE, если сумма значений столбца > 1000
+tMtCats %>% 
+  map(sum) %>%
+  map_lgl(~ . >1000)
+
+tMtCats %>% 
+  map_lgl(~ sum(.) > 1000)
+
+map_lgl(tMtCats, function(.) sum(.) > 1000)
+
+
+# library furrr - парралельные вычисления
+## purrr vs furrr
+library(purrr)
+map_dbl(1:4,function(x) x^2) # sequent
+
+library(furrr)
+future::plan(multiprocess) # обратились к возможностям многопроцессорных вычислений
+# require(future) # еще один вариант загрузки библиотеки
+future_map_dbl(1:4,function(x) x^2) # parallel
+
+library(tictoc)
+tic()
+map_dbl(1:4,function(x) {
+  Sys.sleep(1)
+  x^2})
+toc()
+
+tic()
+future_map_dbl(1:4,function(x) {
+  Sys.sleep(1)
+  x^2})
+toc()
+
+future_map_dbl(1:4, ~ . ^2)
+future_map_dbl(1:4000, function(x) {
+  Sys.sleep(1)
+  x^2
+  },.progress = T)
+
+```
+
