@@ -40,7 +40,7 @@ avg1 <- function(x, trim = 0, na.rm = F){
     naSum <- sum(is.na(x))
     x <- sort(x, na.last= F)[naSum:len]
     x <- x[stP:enP]
-    # так и не понял до конца алгоритм реализации trim в mean
+    # так и не понял до конца алгоритм реализации trim в mean, т.к. все равно есть расхождение
   }
   sum(x,na.rm = na.rm)/(length(x)-sum(is.na(x)))
 }
@@ -68,22 +68,17 @@ avg2 <- function(x, a = F, trim = 0, na.rm = F) {
     naSum <- sum(is.na(x))
     x <- sort(x, na.last= F)[naSum:len]
     x <- x[stP:enP]
-    # так и не понял до конца алгоритм реализации trim в mean
+    # так и не понял до конца алгоритм реализации trim в mean, т.к. все равно есть расхождение
   }
   if (a == T) {
     return(sum(x,na.rm = na.rm)/(length(x)-sum(is.na(x))))
   }
   prod(x, na.rm = na.rm)**(1/(length(x)-sum(is.na(x))))
 }
-a <- F
-trim <- 0.2
-naRm <- T
 x <- c(1,2,3,4,NA,7,1,10)
 
-list(avg = avg2(x, a, na.rm = naRm),
-     mean = mean(x, na.rm = naRm),
-     avg_trimmed = avg2(x, a, trim = trim, na.rm = naRm),
-     mean_trimmed = mean(x, trim = trim, na.rm = naRm))
+list(avg_a = avg2(x, a = T, na.rm = T),
+     avg_g = avg2(x, a = F, na.rm = T))
 ```
 
 ##### (c) Использование цикла for. 
@@ -92,17 +87,17 @@ list(avg = avg2(x, a, na.rm = naRm),
 
 ```{r, eval=FALSE}
 # m - input 
-vector <- function(length) {
-  v <- 1
-  for(i in 2:length) {
-    v[i] <- sum(i,v[(i-1)])
+sumRange1 <- function(s) {
+  for(i in 1:length(s)) {
+    s[i] <- sum(1:i)
   }
-  return(v)
+  return(s)
 }
 
 #m <- as.numeric(readline(prompt = "Enter range length: "))
 m <- 10
 s <- vector(length=m)
+s <- sumRange1(s)
 s
 ```
 
@@ -112,34 +107,53 @@ s
 
 ```{r}
 # График, функция суммы вызывается внутри функции построения графика
-#plot(1:m, s, type="l", xlab="длина ряда", ylab="сумма ряда")
+sumRange1 <- function(s) {
+  for(i in 1:length(s)) {
+    s[i] <- sum(1:i)
+  }
+  return(s)
+}
+m <- 10
+s <- vector(length=m)
+s <- sumRange1(s)
+plot(1:m, s)
 ```
 
-##### (e) Еще на создание функции. 
+##### (e) Еще на создание фуДнкции. 
 Создайте функцию "altman". Эта функция на вход принимает два аргумента $x$ и $y$ и строит график разности их сумм.
 
 ```{r}
 altman <- function(x,y) {
-  # задание непонятно
+  if(length(x) != length(y)) {
+    print("x and y must have the same length")
+    return(F)
+  }
+  sx <- (x + y)/2
+  sy <- x - y
+  par(mfrow=c(1,1))
+  plot(sx, sy)
 }
-altman(1:10,c(20,2,3,4,1))
+x <- rnorm(50)
+y <- rnorm(50)
+altman(x = x, y = y)
 ```
 
 
 ##### (f) sapply.
 Повторите задание **(c)** используя `sapply`
 ```{r eval=FALSE}
-vector <- function(length) {
-  v <- 1
-  for(i in 2:length) {
-    v[i] <- sapply(v[(i-1)], sum, i)
+sumRange2 <- function(s) {
+  s <- 1:length(s)
+  for (i in 2:length(s)) {
+    s[i] <- sapply(s[(i-1)], sum, i)
   }
-  return(v)
+  return(s)
 }
 
 #m <- as.numeric(readline(prompt = "Enter range length: "))
 m <- 10
 s <- vector(length=m)
+s <- sumRange2(s)
 s
 ```
 
@@ -149,18 +163,19 @@ s
 
 ```{r eval=FALSE}
 # постройте график
-sumRange <- function(n) {
-  v <- 1
-  for(i in 2:n) {
-    v[i] <- sapply(v[(i-1)], sum, i)
+sumRange3 <- function(n) {
+  for(i in 1:length(s)) {
+    s[i] <- sum(1:i)
   }
-  return(v)
+  return(s)
 }
 
 n <- 10
-s_n <- sumRange(n)
+s_n <- sumRange3(n)
+par(mfrow=c(1,1))
 plot(1:n, s_n)
-#lines(n, n*(n+1)/2) # нанесение на график линии
+lines(1:n,s_n) # нанесение на график линии
+#lines(n, n*(n+1)/2)
 ```
 
 ##### (h) Подтверждение формулы.
@@ -178,7 +193,7 @@ sumRange2 <- function(n) {
 n <- 10
 s_n2 <- sumRange2(n)
 plot(1:n, s_n2)
-s_n2
+lines(1:n, s_n2)
 #lines(n, n*(n+1)(2*n+1)/6)
 ```
 
@@ -330,30 +345,30 @@ hist(list.random$z, breaks = 20, col = 'steelblue')
 
 ```{r}
 count <- 1
-res1 <- c()
+resMT <- c()
 for(i in 1:length(names(list.random))) {
-  res1[count] <- trimmedMean(list.random[[i]],s=5,l=5)
+  resMT[count] <- trimmedMean(list.random[[i]],s=5,l=5)
   count <- count + 1
 }
-res1
+resMT
 ```
  
 ##### (c) Вычислите неограниченные средние для векторов из списка. Как можно их сравнить с ограниченными средними из задания (b)? Объясните полученный результат. 
 
 ```{r}
 count <- 1
-res2 <- c()
+resM <- c()
 for(i in 1:length(names(list.random))) {
-  res2[count] <- mean(list.random[[i]])
+  resM[count] <- mean(list.random[[i]])
   count <- count + 1
 }
-res2
+resM
 ```
 
 **Объяснение:** 
 <font color="#157515"><b>
 
-Замените текст ответом. (не удаляйте html теги)
+Сравнить усеченное среднее и неусеченное среднее можно относительно медианы числового ряда. При увеличении степени усечения показатель средней стремится к медиане. Это происходит по той причине, что характеристика с усечением становится менее чувствительна к выбросам.
 
 </font></b>
 
@@ -362,8 +377,28 @@ res2
 Повторите часть **(b)**, используя `lapply` и `sapply` функции вместо цикла for.  Команда `lapply` должна возвращать список ограниченных средних, а `sapply` должна возвращать вектор ограниченных средних
 
 ```{r}
-# Отредактируйте
+lapply(list.random, FUN = trimmedMean, s = 5, l = 5)
+sapply(list.random, FUN = trimmedMean, s = 5, l = 5)
 ```
 
 **Hint** `lapply` и `sapply` могут брать аргументы для передачи в функцию `trimmedMean`  Т.е., если будете применять функцию `sort`, в которой есть аргумент `decreasing`, можно использовать следующий синтакиси `lapply(..., FUN = sort, decreasing = TRUE)`.
+
+
+### Задание лекции 5: Создать функцию расчета квантиля. Quant(x,0.25) должна выдать значение первого квартиля. Вывод такой же как в стандартной функции quantile().
+
+```{r}
+Quant <- function(x,q) {
+# type 7
+  x <- sort(x)
+  h <- (length(x)-1)*q+1
+  if(is.integer(h)) {
+    return(x(h))
+  }
+  return(x[floor(h)]+(h-floor(h))*(x[floor(h)+1]-x[floor(h)]))
+}
+
+x <- rnorm(10)
+quantile(x)
+Quant(x,0.25)
+```
 

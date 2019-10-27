@@ -24,7 +24,9 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 # Lecture 05 Tidy data
 
 ```{r}
-library(dplyr)
+library(dplyr) #pipe
+library(tidyverse)
+library(tibble)
 data("mtcars")
 str(mtcars)
 
@@ -177,6 +179,15 @@ IQR
 x<-1:10
 x
 quantile(x)
+x<-c(1:5)
+x<-c(50,1:10)
+x<-c(1:10,50)
+
+1+1*0.25
+
+(4-1)*0.25
+length(x)*0.25
+
 
 # создать Quant(x,0.25) дающую вывод quantile(x)
 # если будет ошибка, то
