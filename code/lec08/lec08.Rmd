@@ -76,7 +76,206 @@ ggplot(mpg, aes(displ,hwy)) + geom_point() #no
 ggplot(mpg, aes(displ,hwy,col='red')) + geom_point() #ok
 ggplot(mpg, aes(displ,hwy)) + geom_point(aes(col='red')) #ok
 
+#ok - раскрашивается фактор
+# aes - указаение темы
+
+ggplot(mpg, aes(displ, cty, color = class))+geom_point(size=2, shape=1)
+ggplot(mpg, aes(displ, hwy, col=class))+geom_point(shape = as.factor(mpg$cyl), size=4)
+
+# 1. что происходит, когда применяется непрерывная переменная (факторная) на size и shape
+ggplot(mpg, aes(displ, hwy, 
+                col=class))+geom_point(size = as.numeric(as.factor(mpg$class)))
+# 2. что будет, если применить не одну, а две эстетики на графике
+
+ggplot(mpg, aes(displ, hwy, color = class))+geom_point(aes(size=year))
+
+# 3. что будет, если использовать trans переменную из выборки на shape
+# постройте график зависимости типа привода от размера двигателя и класса. какая будет зависимость?
+
+View(BOD)
+plot(BOD, type='l')
+plot(BOD$demand~BOD$Time, type='l')
+points(BOD$demand~BOD$Time, type = "p", pch = 18)
+
+ggplot(BOD, aes(x=Time, y=demand)) + geom_line() + geom_point()
+
+BOD1 <- BOD
+BOD1$Time <- factor(BOD1$Time)
+ggplot(BOD1, aes(x=Time, y=demand, group=1)) + geom_line() + geom_point()
+
+ggplot(BOD1, aes(x=Time, y=demand, group=1)) + geom_line() + geom_point() + ylim(0, max(BOD1$demand))
+
+ggplot(BOD1, aes(x=Time, y=demand, group=1)) + geom_line() + geom_point() + expand_limits(y=0)
+ggplot(BOD1, aes(x=Time, y=demand, group=1)) + geom_line() + geom_point() + expand_limits(y=5)
 
 
+worldpop <- read.csv('worldpop.csv')
+worldpop <- worldpop[-1]
+worldpop
+plot(worldpop$Population~worldpop$Year, type='l')
+p <- worldpop$Population
+plot(log(p)~worldpop$Year, type='l')
+points(log(p)~worldpop$Year, type = "p", pch = 18)
+
+library(dplyr)
+
+ggplot(worldpop, aes(Year, Population)) + geom_line() + geom_point() + scale_y_log10()
+
+library(dplyr)
+library(gridExtra)
+wp1 <- filter(worldpop, worldpop$Year < 0)
+wp2 <- filter(worldpop, worldpop$Year >= 0)
+g1 <- ggplot(wp1, aes(Year, Population)) + geom_line() + geom_point()
+g2 <- ggplot(wp2, aes(Year, Population)) + geom_line() + geom_point()
+grid.arrange(g1,g2,ncol=2)
+
+
+ggplot(mpg, aes(displ, hwy)) + geom_point() +
+   scale_y_continuous("mpg", sec.axis = sec_axis(trans = ~ . *1.2, name="mpg1"))
+
+par(mfrow=c(1,1))
+curve(x^3 - 5*x,from = -4, to = 4)
+
+f1 <- function(x) {
+   1/(1+exp(-x+10))
+}
+curve(f1(x),from = 0, to = 20)
+curve(1-f1(x),from = 0, to = 20, add = T, col = 'blue')
+
+f2 <- function(x) 1 - f1(x)
+ggplot(data.frame(x=c(0,20)), aes(x=x)) + stat_function(fun = f1, geom = 'line') +
+   stat_function(fun = f2, geom = 'line')
+
+library(readr)
+tips <- read.csv("tips.csv")
+tips <- read.csv("tips.csv")
+
+tips$X.1 <- NULL
+tips$X <- NULL
+head(tips)
+colnames(tips) <- c("Total Bill", "Tip", "Sex of Tipper", "Smoker", "Day", "Meal", "Party Size")
+
+# Добавить столбец Tip persent tip/total_bill
+
+tips$tip_persent <- tips$tip/tips$total_bill
+
+#tips <- tips %>% mutate(Tip_persent=Tip/`Total Bill`)
+
+# Добавить столбец day number 4-7
+tips$dayNumber <-
+tips$day[tips$day == "Thur"] <- 4
+tips$dayNumber <-
+tips$day[tips$day == "Fri"] <- 5
+tips$dayNumber <-
+tips$day[tips$day == "Sat"] <- 6
+tips$dayNumber <-
+tips$day[tips$day == "Sun"] <- 7
+
+tips$day_number <- ifelse(tips$day=="Sun",7,ifelse(tips$day=="Sat",6,ifelse(tips$day=="Thur",4,5)))
+tips
+
+#tips %>% ggplot(aes(x=Tip_persent, y=as.numeric(tips$`Party Size`))) + geom_point()
+
+ggplot(tips, aes(x=total_bill, y=tip_persent)) + geom_point(aes(color = size))
+ggplot(tips, aes(x=total_bill, y=tip_persent, col = factor(size))) + geom_point()
+ggplot(tips, aes(x=total_bill, y=tip_persent)) + 
+   geom_point(aes(col = factor(time)), shape = 1) +
+   geom_smooth()
+
+hist(tips$tip_persent, breaks = 30, main = 'Hist', xlab = 'Tip persent', col = 'green')
+curve(dnorm(x, mean = mean(tips$tip_persent), 
+            sd = sd(tips$tip_persent)), add = T, col = 'darkblue')
+curve(dnorm(x, mean = mean(tips$tip_persent), 
+            sd = sd(tips$tip_persent)), add = T, col = 'darkblue')
+
+# если tips$tip_persent <- tips$tip/tips$total_bill*100, то curve будет выводить очень маленькую линию. разобраться
+
+
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   facet_wrap(~class)
+
+# фасетка и группировка
+df <- data.frame(
+   x = rnorm(120, c(0,2,4)),
+   y = rnorm(120, c(1,2,1)),
+   z = letters[1:3]
+)
+
+ggplot(df, aes(x,y)) +
+   geom_point(aes(colour = z))
+
+ggplot(df, aes(x,y)) +
+   geom_point() +
+   facet_wrap(~z)
+
+library(dplyr)
+library(tidyverse)
+df_sum <- df %>% group_by(z) %>%
+   summarise(x=mean(x), y=mean(y)) %>%
+   rename(z2=z)
+
+ggplot(df, aes(x,y)) +
+   geom_point() +
+   geom_point(data=df_sum, aes(colour = z2), size = 4) +
+   facet_wrap(~z)
+
+# возвращаемся к mpg
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   facet_wrap(~class)
+
+# применим фасетку к cyl
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   facet_wrap(~as.factor(cyl))
+
+# scales
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   facet_wrap(~as.factor(cyl), scales = 'free')
+
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   facet_wrap(~as.factor(cyl), scales = 'free_x')
+
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   facet_wrap(~as.factor(cyl), scales = 'free_y')
+
+
+# сглаживание loess (локальная регрессия не работает на больших выборках (>1000) O(N^2))
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   geom_smooth() +
+   facet_wrap(~as.factor(cyl), scales = 'free')
+
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   geom_smooth()
+
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   geom_smooth(span = 1)
+
+# span
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   geom_smooth(span = 0.2)
+
+library(mgcv)
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   geom_smooth(method = "gam", formula = y~s(x))
+
+# для выборок больше 1000
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   geom_smooth(method = "gam", formula = y~s(x, bs="cs"))
+
+# линейная
+ggplot(mpg, aes(displ, hwy)) +
+   geom_point() +
+   geom_smooth(method = "lm")
 ```
 
