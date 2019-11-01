@@ -1,0 +1,270 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+# lecture 07
+```{r}
+# функции графики
+# - аппроксимация
+# - визуализация
+
+x <- seq(0,10,0.1)
+y <- exp(x)
+# y = a ln(bx)
+# y = a*exp(bx)
+
+plot(y~x, type='l', main="Exponential")
+y <- log(x)
+plot(y~x, type='l', main="Logarithmic")
+par(mfrow=c(2,1))
+
+# Trigonometry
+x <- seq(0,2*pi,2*pi/100)
+y1 <- cos(x)
+y2 <- sin(x)
+par(mfrow=c(1,3))
+plot(y1~x, type='l', main="Cos")
+plot(y2~x, type='l', main="Sin")
+
+y3 <- tan(x)
+plot(y3~x, type='l', ylim=c(-3,3), main="Tan")
+
+# Power
+# y = ax^b
+
+par(mfrow=c(2,2))
+x <- seq(0,1,0.01)
+y1 <- x^0.5
+plot(y1~x, type='l', main="0<b<1")
+y2 <- x^(-1)
+plot(y2~x, type='l', main="b<0")
+y3 <- x
+plot(y3~x, type='l', main="b=1")
+y4 <- x^2
+plot(y4~x, type='l', main="b>1")
+
+# логорифм дисперсии явл линейной функцией от логарифма среднего (степенной закон Тейлора)
+#log(y)=log(ax^b)=log(a) + b(log(x))
+
+# Polynomial
+x <- seq(0,10,0.1)
+y <- 2 + 5*x - 0.2*x^2
+y1 <- 2 + 5*x - 0.4*x^2
+y2 <- 2 + 4*x - 0.6*x^2 + 0.04*x^3
+y3 <- 2 + 4*x + 2*x^2 - 0.6*x^3 + 0.04*x^4
+
+par(mfrow=c(2,2))
+plot(y~x,type = 'l', main="Замедление")
+plot(y1~x,type = 'l', main="Кочка. Скачок")
+plot(y2~x,type = 'l', main="Inflection")
+plot(y3~x,type = 'l', main="Локальный максимум")
+
+# задача построения моделей -- найти правильные коэффициенты
+# Уравнение Михаэлиса - Ментена
+
+y1 <- x/(2+5*x)
+par(mfrow=c(1,1))
+plot(y1~x,type = 'l', main="Mic-Mie")
+y2 <- 1/(x-2+4/x)
+plot(y2~x,type = 'l', main="Плавный спуск")
+y3 <- 1/(x^2-2+4/x)
+plot(y3~x,type = 'l', main="Крутой спуск")
+
+# Гамма-функция
+par(mfrow=c(1,1))
+x <- seq(0.2,3,0.01)
+y <- gamma(x)
+plot(x, y, type = "l", main = "gamma")
+abline(h=1, col = "red")
+
+# Ассимптотические функции
+# y = (ax) / (1+bx)
+# y = a(1-exp(-bx))
+
+par(mfrow=c(1,1))
+x <- seq(0,5,0.01)
+y = 2*(1-exp(-2*x))
+plot(y~x, type = "l", main = "assymptotic")
+
+# Сигмоидная функция
+# y = exp(a+bx) / (1+exp(a+bx)) # 2 параметра
+# y = a / 1(+b*exp(-cx)) # 3 параметра
+# y = a + (b-a) / (1+exp(c(d-x))) # 4 параметра
+
+par(mfrow=c(2,2))
+x <- seq(0,10,0.01)
+y <- 100 / (1 + 90*exp(-1*x))
+plot(y~x, type = "l", main = "Three-parameter logistic")
+a=20
+b=120
+c=0.8
+d=3
+y = a + (b-a) / (1+exp(c*(d-x)))
+plot(y~x, type = "l", main = "Four-parameter logistic")
+
+# Функция Гомпертца
+
+x <- -200:100
+y <- 100*exp(-exp(0.02*x))
+plot(y~x, type = "l", main = "Negative Gompertz")
+
+x <- 0:100
+y <- 50*exp(-5*exp(-0.08*x))
+plot(y~x, type = "l", main = "Positive Gompertz")
+
+# Biexponential
+# y = a*exp(bx) + c*exp(dx)
+
+# ДЗ получить 4 вида графиков
+# 1 - пологий спуск
+# 2 - параболический (быстрый спуск, медленный подъем)
+# 3 - медленный рост на кочку
+# 4 - параболический вид (медленный спуск, быстрый подъем)
+
+# Трансформация функций
+# log(y) ~ x для exp связей
+# log(y) ~ log(x) для степенных
+# exp(x) ~ x для log
+# 1/y ~ 1/x для ассимптот
+# log(p/(1-p)) ~ x пропорциональные данные
+# sqrt(y) для счетных данных (стабилизация)
+# arcsin(y) для стабилизации процентных данных
+
+```
+
+# Графика
+```{r}
+par(mfrow=c(1,1))
+data("mtcars")
+plot(cars$dist~cars$speed, type = "p", col = "red", 
+     main = "Dist ~ Speed", 
+     xlab = "Speed (m/h)", 
+     ylab = "Stop distantion (ft)",
+     xlim = c(0,30),
+     ylim = c(0,140),
+     xaxs = "i",
+     yaxs = "i",
+     pch  = 19)
+
+points(cars$dist~cars$speed, type = "p", pch = 3)
+
+
+
+plot(pressure$pressure~pressure$temperature, type = "p", col = "red", 
+     main = "Press ~ Temp", 
+     xlab = "Press", 
+     ylab = "Temp",
+#     xlim = c(0,100),
+     ylim = c(0,650),
+     xaxs = "i",
+     yaxs = "i",
+     pch  = 19)
+points(pressure$pressure~pressure$temperature, 
+       type = "p", pch = 3)
+
+abline(v=pressure$pressure/2, col = "blue")
+lines(pressure$pressure/2~pressure$temperature, col = "blue")
+points(pressure$pressure/2~pressure$temperature, 
+       type = "p", pch = 18)
+
+# Сеточка
+plot(cars, 
+     main = "Cars", 
+     xlab = "Speed (m/h)", 
+     ylab = "Stop distantion (ft)")
+
+grid()
+points(cars,pch=18)
+
+
+plot(iris$Petal.Length~iris$Petal.Width, 
+     main = "Iris Petal", 
+     xlab = "Petal Width", 
+     ylab = "Petal Length",
+     pch=18)
+
+plot(iris$Petal.Length~iris$Petal.Width, 
+     main = "Iris Petal", 
+     xlab = "Petal Width", 
+     ylab = "Petal Length",
+     pch=18)
+
+plot(iris$Petal.Length~iris$Petal.Width, 
+     main = "Iris Petal", 
+     xlab = "Petal Width", 
+     ylab = "Petal Length",
+     pch=as.integer(iris$Species))
+
+# Legend for points
+#legend(x,y,labels,pch=c(type1, type2, ...))
+# Legend for lines
+#legend(x,y,labels,lty=c(type1, type2, ...))
+#legend(x,y,labels,lwd=c(type1, type2, ...)) # толщина линии
+# universal
+#legend(x,y,labels,col=c(col1, col2, ...))
+# x,y - coordinates
+
+legend(0.1,6,levels(iris$Species),pch=3)
+
+legend(0.1,6,levels(iris$Species),pch=1:3)
+
+# ggplot2
+library(ggplot2)
+mpg
+# извлечь как можно больше информации из выборки (4-5 функций)
+ggplot(mpg, aes(x=cty, y=displ, col=class))+geom_point()
+ggplot(mpg, aes(x=year, y=hwy, col=class))+geom_point()
+ggplot(mpg, aes(x=manufacturer, y=class, col=year))+geom_point()
+ggplot(mpg, aes(x=cyl, y=cty, col=class)) + geom_point()
+
+# мили на галлон -> литры на 100 км для cty, hwy
+library(dplyr)
+new_mpg <- mpg %>%
+  mutate(cty_e=235.22/cty, hwy_e=235.22/hwy) %>%
+  select(-cty,-hwy)
+
+# у какого производителя больше всего моделей
+#names(which(summary(as.factor(mpg$manufacturer)) == max(summary(as.factor(mpg$manufacturer)))))
+names(which.max(summary(as.factor(mpg$manufacturer))))
+
+# у какой модели больше всего разновидностей
+names(which.max(summary(as.factor(mpg$model))))
+# изменится ли ответ, если избавиться от лишней переменной (какой)?
+new_mpg %>% filter(model == "a4" | model == "a4 quattro")
+
+# хороший график
+ggplot(mpg, aes(x = mpg$hwy, y = mpg$cty)) + geom_point()
+
+# непоказательный график
+ggplot(mpg, aes(model, manufacturer)) + geom_point()
+# теперь лучше
+ggplot(mpg, aes(manufacturer, model)) + geom_dotplot()
+
+# будет ли смысл в этих графиках?
+ggplot(mpg, aes(cty, hwy)) + geom_point()
+ggplot(diamonds, aes(carat, price)) + geom_point()
+ggplot(economics, aes(date, unemploy)) + geom_line()
+ggplot(mpg, aes(cty)) + geom_histogram()
+
+ggplot(mpg, aes(displ, cty, col=class))+geom_point()
+plot(mpg$cty~mpg$cty, pch=as.integer(as.factor(mpg$class)))
+
+```
+
