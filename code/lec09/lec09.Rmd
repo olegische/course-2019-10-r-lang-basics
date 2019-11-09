@@ -1,0 +1,441 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+#lecture 09
+```{r}
+library(dplyr)
+library(ggplot2)
+
+Events <- read.csv("Events.csv", 
+                 header=T, 
+                 sep=",")
+
+View(Events)
+
+p <- Events %>% ggplot(aes(population/10^6,
+                           total,
+                           label=abb))
+
+p + geom_point(size=3) +
+  geom_text(nudge_x = 1.5) # сдвиг подписи
+
+p + geom_point(size=3) +
+  geom_text(aes(x=10, y=800, label = "надпись"))
+
+
+p + geom_point(size=3) +
+  scale_x_log10() + 
+  scale_y_log10()
+
+# нанесение подписи
+# + geom_text(nudge_x = 0.05)
+# оси и заголовок
+
+p + geom_point(size=3) +
+  scale_x_log10() + 
+  scale_y_log10() +
+  geom_text(nudge_x = 0.05) +
+  xlab("население, млн. (log)") +
+  ylab("число событий (log)") +
+  ggtitle("число событий в США") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# цвет точек
+p + geom_point(size=3, color = "blue") +
+  scale_x_log10() + 
+  scale_y_log10() +
+  geom_text(nudge_x = 0.05) +
+  xlab("население, млн. (log)") +
+  ylab("число событий (log)") +
+  ggtitle("число событий в США") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# цвет по региону
+p + geom_point(size=3, aes(col=region)) +
+  scale_x_log10() + 
+  scale_y_log10() +
+  geom_text(nudge_x = 0.05) +
+  xlab("население, млн. (log)") +
+  ylab("число событий (log)") +
+  ggtitle("число событий в США") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# вытащить переменную
+r <- Events %>%
+  rate = sum(total)/sum(population)*10^6
+
+r <- Events %>%
+  summarize(rate = sum(total)/sum(population)*10^6) %>%
+  pull(rate)
+
+# нанести линию на основе r
+p + geom_point(size=3, aes(col=region)) +
+  scale_x_log10() + 
+  scale_y_log10() +
+  geom_text(nudge_x = 0.05) +
+  xlab("население, млн. (log)") +
+  ylab("число событий (log)") +
+  ggtitle("число событий в США") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_abline(intercept = log10(r), lty=2, color = "darkgrey")
+
+# цвет линии темно-серый, прерывистая
+library(ggthemes)
+library(ggrepel)
+
+p + geom_point(size=3, aes(col=region)) +
+  scale_x_log10() + 
+  scale_y_log10() +
+  geom_text(nudge_x = 0.05) +
+  xlab("население, млн. (log)") +
+  ylab("число событий (log)") +
+  ggtitle("число событий в США") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_abline(intercept = log10(r), lty=2, color = "darkgrey") +
+  theme_economist() +
+  geom_text_repel()
+
+```
+
+```{r}
+homes <- read.csv("homes.csv", 
+                 header=T, 
+                 sep=",")
+
+View(homes)
+
+ggplot(homes,
+       aes(x = finsqft)) +
+  geom_histogram()
+
+
+ggplot(homes,
+       aes(x = finsqft)) +
+  geom_histogram(binwidth = 40)
+
+# полигон
+
+ggplot(homes,
+       aes(x = finsqft)) +
+  geom_freqpoly(bins=40)
+
+# полигон по городам
+
+ggplot(homes,
+       aes(x = finsqft, color = city)) +
+  geom_freqpoly(bins=40)
+
+# true histogram
+
+ggplot(homes,
+       aes(x = finsqft, y = stat(density))) +
+  geom_histogram(bins = 250)
+
+ggplot(homes,
+       aes(x = finsqft, y = stat(density))) +
+  geom_freqpoly(bins = 250)
+
+# срамнение
+
+ggplot(homes,
+       aes(x = finsqft, y = stat(density), color = city)) +
+  geom_freqpoly(bins = 50)
+
+# фасетка
+
+ggplot(homes, aes(x = finsqft)) +
+  geom_histogram(binwidth = 200) + 
+  facet_wrap(~city)
+
+# zppm
+
+ggplot(homes, aes(x = finsqft)) +
+  geom_histogram(binwidth = 200) + 
+  facet_wrap(~city, scales = 'free') + 
+  coord_cartesian(xlim = c(500, 5000))
+
+# убрать город
+ggplot(filter(homes, city!='CHARLOTTESVILLE'),
+       aes(x = finsqft, y = stat(density))) +
+  geom_histogram(binwidth = 200) + 
+  facet_wrap(~city) + 
+  coord_cartesian(xlim = c(500, 5000))
+
+# histogram for totalvalue, bins=150
+# facet wrath for zip
+# zoom price 0 - 10^6
+
+ggplot(homes,
+       aes(x = totalvalue)) +
+  geom_histogram(binwidth = 150) +
+  facet_wrap(~zip) +
+  coord_cartesian(xlim = 0:10^6)
+
+# bar
+
+ggplot(homes, aes(x = condition)) +
+  geom_bar()
+
+hc <- homes %>% group_by(condition) %>%
+  tally()
+
+hc
+# применение количественной переменной для
+# изменения порядка столбцов
+
+ggplot(hc, aes(x = condition, y = n)) +
+  geom_col()
+
+ggplot(hc, aes(x = reorder(condition, n), y = n)) +
+  geom_col()
+
+ggplot(hc, aes(x = reorder(condition, -n), y = n)) +
+  geom_col() + xlab("Condition")
+
+# вращение координат
+
+ggplot(homes, aes(x = condition)) +
+  geom_bar(width = 0.75) + 
+  coord_flip()
+
+# заполнение по факторам
+
+ggplot(homes, aes(x = condition, fill = factor(fp))) +
+  geom_bar()  
+
+# то жк рядом
+
+ggplot(homes, aes(x = condition, fill = factor(fp))) +
+  geom_bar(position = 'dodge')  
+
+# заполнение по относительной доле
+    
+ggplot(homes, aes(x = condition, fill = factor(fp))) +
+  geom_bar(position = 'fill')  
+
+# очередное прослушанное задание
+
+round(prop.table(table(homes$condition, homes$fp), 1), 2)
+
+table(homes$fp, homes$condition) %>%
+  prop.table(margin = 2) %>%
+  round(2)
+
+# ручное задание цвета
+
+ggplot(homes, aes(x = condition, fill = factor(fp))) +
+  geom_bar(position = 'fill') +
+  scale_fill_manual("FP",
+                    values = c("Blue", "Red"),
+                    labels = c("None", "One+"))
+
+# !!! Homework
+# 1 повторить предыдущие графики
+# 2 barplot числа по zip
+# 3 proportion
+# fix
+
+ggplot(filter(homes, bedroom %in% 1:5),
+       aes(x = city, fill = factor(bedroom))) +
+  geom_bar(position = 'fill') +
+  scale_fill_discrete('Bedrooms')
+
+# не разглядеть
+
+ggplot(homes, aes(x = finsqft, y = totalvalue)) +
+  geom_point()
+
+# блендинг
+ggplot(homes, aes(x = finsqft, y = totalvalue)) +
+  geom_point(alpha = 1/10)
+
+# уменьшить сами точки
+
+ggplot(homes, aes(x = finsqft, y = totalvalue)) +
+  geom_point(shape = ".")
+
+# aka base R
+
+ggplot(homes, aes(x = finsqft, y = totalvalue)) +
+  geom_point(shape = 1)
+
+# продвинутое - facet
+
+ggplot(homes, aes(x = finsqft, y = totalvalue)) +
+  geom_point() +
+  facet_wrap(~city)
+
+# mapping
+
+ggplot(homes, aes(x = finsqft, y = totalvalue)) +
+  geom_point() +
+  facet_wrap(~city) +
+  coord_cartesian(xlim = c(0, 3000), ylim = c(0, 10^6))
+
+# !!! Homework
+# 4 построить график age no finsqft
+# 5 zoom по осям (смотрим > 100 лет, площадь < 5000)
+# 6 раскрасить по фактору fp
+
+p <- ggplot(homes, aes(x = finsqft, y = totalvalue)) +
+  geom_point()
+
+p <- p + coord_cartesian(xlim = c(0, 2000), ylim = c(0, 5e5))
+
+p + facet_wrap(~condition)
+
+h <- ggplot(homes)
+
+h <- h + aes(x = condition)
+
+h + geom_bar()
+
+# 1 new aes
+
+h + aes(x = finsqft, y = totalvalue) +
+  geom_point()
+
+# 2
+h + aes(x = condition) +
+  geom_bar()
+
+# сглаживание
+
+h + aes(x = finsqft, y = totalvalue) +
+  geom_point(alpha = 1/6)
+
+h + facet_wrap(~city) +
+  geom_smooth()
+
+h + facet_wrap(~city) +
+  geom_smooth(method = lm)
+
+h + facet_wrap(~city) +
+  geom_smooth(se = F, color = "red") +
+  geom_smooth(method = lm, se = F)
+
+# можно обрезать для линейных моделей
+
+h + facet_wrap(~city) +
+  geom_smooth(se = F, color = "red") +
+  geom_smooth(method = 'lm', se = F) +
+  coord_cartesian(xlim = c(0, 5000), ylim = c (1, 1e6)) +
+  labs(title = "total value ~sq ft.") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# !!!Homework
+# 7 график totalvalue ~ lotsize + сглаживание + zoom x=(0,10) y=(0, 1e6)
+# название осей, заголовок
+
+# boxplots
+
+ggplot(homes, aes(x = fullbath, y = totalvalue)) +
+  geom_boxplot()
+
+ggplot(homes, aes(x = factor(fullbath), y = totalvalue)) +
+  geom_boxplot()
+
+ggplot(homes, aes(x = factor(fullbath), y = totalvalue)) +
+  geom_boxplot() +
+  scale_y_continuous(limits = c(1, 1e6))
+
+
+ggplot(homes, aes(x = factor(fullbath), y = totalvalue)) +
+  geom_boxplot() +
+  scale_y_continuous() +
+  coord_cartesian(xlim = c(1,5), ylim = c(1, 1e6))
+
+# продвинутые методы
+
+ggplot(homes, aes(x = fullbath,
+                  y = totalvalue,
+                  groyp = fullbath)) +
+  geom_jitter(width = 0.3, height = 0, alpha = 1/5) +
+  scale_y_continuous() +
+  coord_cartesian(xlim = c(1,5), ylim = c(1,1e6))
+
+# изучить дома с 4 ванными или меньше, стоимость < 250k
+
+ggplot(homes, aes(x = fullbath,
+                  y = totalvalue,
+                  groyp = fullbath)) +
+  geom_jitter(width = 0.3, height = 0, alpha = 1/5) +
+  scale_y_continuous() +
+  coord_cartesian(xlim = c(1,5), ylim = c(1,250000))
+
+# посмотреть на выбор
+
+subset(homes, fullbath = 4 & totalvalue < 150000) %>%
+  arrange(desc(totalvalue)) %>%
+  View()
+
+# !!! homework
+# 8 boxplot totalvalue ~ zip
+# stripchart (jitter width = 0.4), ylim < 1e6
+
+# графики двух дискретных переменных
+
+ggplot(homes, aes(x = bedroom, y = fullbath)) +
+  geom_point()
+
+# покажем классы
+
+ggplot(homes, aes(x = bedroom, y = fullbath)) +
+  geom_jitter()
+
+
+ggplot(homes, aes(x = bedroom, y = fullbath)) +
+  geom_jitter(alpha = 1/5) +
+  scale_x_continuous(breaks = 0:20, minor_breaks = NULL) +
+  scale_y_continuous(breaks = 0:14, minor_breaks = NULL)
+
+# !!! homework
+# 9 посчитать число домов по году постройки (tibble 2 столбца) -> years
+# 10 построить линейный график ggplot(years, )
+
+homes %>% 
+  filter(yearbuilt > 0) %>% 
+  group_by(yearbuilt) %>%
+  tally()
+
+years <- homes %>% 
+  filter(yearbuilt > 0) %>% 
+  group_by(yearbuilt) %>% 
+  count() 
+
+ggplot(years, aes(x = yearbuilt, y = n)) +
+  geom_line()
+
+# настроить ось x
+
+ggplot(years, aes(x = yearbuilt, y = n)) +
+  geom_line() +
+  scale_x_continuous(breaks = seq(1700,2000,50))
+
+filter(years, n > 750)
+
+#EOF
+```
+
+
+
+

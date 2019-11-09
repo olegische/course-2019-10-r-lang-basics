@@ -1,0 +1,103 @@
+---
+title: "Homework4"
+output: html_notebook
+---
+
+Загрузите выборку из файла https://ednet.bulgakov.app/storage/documents/6900/7rumGQ2nOJhPFSbAywp1Qq7K8kifyFytjgIJ6nrL.txt
+В ней содержится информация о времени сна и массе млекопитающих.
+Описание столбцов:
+column name	Description
+name -	common name
+genus	- taxonomic rank
+vore -	carnivore, omnivore or herbivore
+order -	taxonomic rank
+conservation -	the conservation status of the mammal
+sleep_total -	total amount of sleep, in hours
+sleep_rem	- rem sleep, in hours
+sleep_cycle	- length of sleep cycle, in hours
+awake -	amount of time spent awake, in hours
+brainwt -	brain weight in kilograms
+bodywt -	body weight in kilograms
+
+# 1 Базовые манипуляции
+### (a) 
+Вывести таблицу с именем и общим количеством сна
+```{r}
+
+```
+
+### (b) 
+Вывести таблицу со всеми столбцами кроме имени
+```{r}
+
+```
+
+### (с) 
+Вывести таблицу со столбцами от имени до order
+```{r}
+
+```
+
+### (d) 
+Вывести таблицу со всеми столбцами, начинающимися с sl (должны выйти три столбца)
+```{r}
+
+```
+
+### (e) 
+Вывести таблицу со всеми столбцами, содержащими wt (должны выйти два столбца)
+```{r}
+
+```
+
+# 2 Фильтрация
+
+### (a) 
+Отфильтровать всех, у кого полное время сна больше 16
+```{r}
+
+```
+
+### (b) 
+Отфильтровать всех, у кого полное время сна больше 16 и масса больше 1 кг.
+```{r}
+
+```
+
+### (с) 
+Вывести строки исходной таблицы, отсортированные сначала по Perissodactyla, затем по Primates
+```{r}
+
+```
+
+### (d)
+Вывести три столбца (name, order, sleep_total) отсортированных по второму(в прямом) и третьему столбцу(в обратном порядке).
+```{r}
+
+```
+
+### (e)
+К выводу *e* добавить фильтрацию полное время сна больше 16
+```{r}
+
+```
+
+# 3 Создание и итоги
+### (a) 
+Создать столбец в исходной таблице с отношением sleep_rem/sleep_total, создать столбец вес в граммах
+```{r}
+
+```
+
+### (b) 
+Вывести следующие итоги
+```{r}
+##   avg_sleep min_sleep max_sleep total
+## 1  10.43373       1.9      19.9    83
+```
+
+### (c) 
+Вывести ту же статистику, что и в *b*, но для сгруппированных по order данных. Должна получиться матрица 19*5
+```{r}
+
+```

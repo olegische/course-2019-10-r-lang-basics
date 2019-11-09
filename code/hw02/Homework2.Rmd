@@ -113,6 +113,7 @@ sumRange1 <- function(s) {
   }
   return(s)
 }
+
 m <- 10
 s <- vector(length=m)
 s <- sumRange1(s)
