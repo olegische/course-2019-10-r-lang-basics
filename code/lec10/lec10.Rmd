@@ -1,0 +1,425 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+# lecture 10
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+homes <- read.csv("homes.csv", 
+                 header=T, 
+                 sep=",")
+
+years <- homes %>%
+  group_by(yearbuilt) %>%
+  filter(yearbuilt>0) %>%
+  tally()
+
+ggplot(years, aes(x = yearbuilt, y = n)) +
+  geom_line()
+
+# настроить ось x
+ggplot(years, aes(x = yearbuilt, y = n)) +
+  geom_line() +
+  scale_x_continuous(breaks = seq(1700,2000,5)) +
+  annotate("text", 
+           x = c(1973,2004), 
+           y = c(900,870), 
+           label = c("883", "842"))
+
+# два графика
+ggplot(homes, aes(x = yearbuilt, y = totalvalue)) +
+  geom_point(position = position_jitter(w = 0.2, h = 0), shape = ".") +
+  coord_cartesian(xlim = c(1950,2016), ylim = c(0,1e6))
+
+homevalues <- homes %>%
+  group_by(yearbuilt) %>%
+  summarize(mean_tv = mean(totalvalue),
+            median_tv = median(totalvalue))
+
+ggplot(homes, aes(x = yearbuilt, y = totalvalue)) +
+  geom_point(position = position_jitter(w = 0.2, h = 0), shape = ".") +
+  geom_line(aes(y = mean_tv, color = "mean"), homevalues) +
+  geom_line(aes(y = median_tv, color = "median"), homevalues) +
+  coord_cartesian(xlim = c(1950,2016), ylim = c(0,1e6)) +
+  scale_color_manual("Summary", values = c("blue", "red"))
+
+ggplot(homes, aes(x = city, y = totalvalue)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0,1e6))
+
+#install.packages("scales")
+library(scales)
+
+homeMedians <- homes %>%
+  group_by(city) %>%
+  summarise(median_tv = median(totalvalue)) %>%
+  mutate(medianValueD = dollar(median_tv))
+
+ggplot(homes, aes(x = city, y = totalvalue)) +
+  geom_boxplot() +
+  geom_text(label = medianValueD, y = median_tv) +
+  coord_cartesian(ylim = c(0,1e6))
+
+# вывести слева гистограмму площадь, слева точечный стоимость-площадь
+library(gridExtra)
+p1 <- ggplot(homes, aes(x = finsqft)) +
+  geom_histogram()
+p2 <- ggplot(homes, aes(x = finsqft, y = totalvalue)) +
+  geom_point()
+
+grid.arrange(p1, p2, nrow = 1)
+
+
+# Тема
+ggplot(homes, aes(x = finsqft)) +
+  geom_histogram(bins = 40) +
+  theme_bw()
+
+ggplot(homes, aes(x = finsqft)) +
+  geom_histogram(bins = 40)
+
+# фиксация темы
+prevTheme <- theme_set(theme_bw())
+ggplot(homes, aes(x = finsqft)) +
+  geom_histogram(bins = 40)
+ggplot(homes, aes(x = city, y = finsqft)) +
+  geom_boxplot()
+
+# сброс темы
+theme_set(prevTheme)
+ggplot(homes, aes(x = city, y = finsqft)) +
+  geom_boxplot()
+
+
+library(ggthemes)
+
+# найти тему для wall street journal, tufte, five 38
+
+ggplot(homes, aes(x = city, y = finsqft)) +
+  geom_boxplot() +
+  theme_wsj()
+
+ggplot(homes, aes(x = city, y = finsqft)) +
+  geom_boxplot() +
+  theme_tufte()
+
+ggplot(homes, aes(x = city, y = finsqft)) +
+  geom_boxplot() +
+  theme_fivethirtyeight()
+
+install.packages("plotly")
+library(plotly)
+
+p <- ggplot(filter(homes, city == "SCOTTSVILLE"), 
+            aes(x = finsqft, y = totalvalue)) +
+  geom_point()
+
+ggplotly(p)
+
+
+homes2 <- subset(homes, totalvalue < 1e6 & condition %in%
+                   c("Average", "Good", "Excellent"))
+
+# сделать фасетку
+
+ggplot(homes2, aes(x = finsqft, y = totalvalue)) +
+  geom_point(alpha = 1/5) + 
+  facet_grid(condition~city)
+
+# labele
+
+ggplot(homes2, aes(x = finsqft, y = totalvalue)) +
+  geom_point(alpha = 1/5) + 
+  facet_grid(condition~city, labeller = label_both)
+
+
+ggplot(homes2, aes(x = finsqft, y = totalvalue)) +
+  geom_point(alpha = 1/5) + 
+  facet_grid(condition~city, 
+             labeller = labeller(city = label_wrap_gen(10),
+                                 condition = label_both))
+
+# Цветовые схемы
+# 1. sequential - порядковые
+# 2. qualititative - номинальные или категориальные
+# 3. diverging - критические в середине и по краям
+
+library(RColorBrewer)
+
+display.brewer.all(type = "seq")
+display.brewer.all(type = "qual")
+display.brewer.all(type = "div")
+
+ggplot(subset(homes, totalvalue < 1e6), 
+       aes(x = totalvalue, fill = condition)) +
+  geom_histogram() +
+  scale_fill_brewer(palette = "Blues")
+
+display.brewer.all(type = "qual", select = "Accent")
+
+ggplot(subset(homes, totalvalue < 1e6 & yearbuilt > 0),
+       aes(x = yearbuilt, fill = city)) +
+  geom_histogram() +
+  scale_fill_brewer(palette = "Accent")
+
+# Собственная палитра
+ggplot(subset(homes, totalvalue < 1e6 & 
+                condition %in% c("Average", "Good", "Excellent")),
+       aes(x = finsqft, y = totalvalue, color = condition)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  scale_color_manual(values = c("#92a8d1", "#034f84", "#f7cac9", "#f7786b"))
+
+# градиенты
+ggplot(subset(homes, totalvalue < 1e6 &
+               condition %in% c("Average","Good","Excellent","Fair")),
+      aes(x = condition, y = totalvalue, color = finsqft)) +
+ geom_jitter(height = 0) +
+ scale_y_log10(labels = scales::dollar) +
+ scale_color_gradient(low = "#d5f4e6", high = "#618685")
+ + theme_bw()
+
+data(chickwts)
+str(chickwts)
+
+sc <- ggplot(chickwts, aes(x = feed, y = weight)) +
+  geom_jitter(width = 0.1, height = 0)
+
+sc
+
+chick2 <- chickwts %>%
+  group_by(feed) %>%
+  summarise(fMean = mean(weight),
+            fSe = sd(weight)/sqrt(length(weight)))
+
+sc +
+  geom_point(data = chick2, aes(x = feed, y = fMean), color = "red", size = 3) +
+  geom_errorbar(data = chick2, aes(x = feed, y = fMean,
+                                   ymin = fMean - 2*fSe,
+                                   ymax = fMean + 2*fSe),
+                width = 0.1, color = "red") +
+  labs(title = "Средний вес по типу кормления с доверительными интервалами")
+
+# доверительные на линейном графике
+ggplot(Indometh, aes(x = time, y = conc, group = Subject)) + 
+  geom_line()
+
+Indo2 <- Indometh %>%
+  group_by(time) %>%
+  summarise(tMean = mean(conc),
+            tSe = sd(conc)/sqrt(length(conc)))
+
+ggplot(Indo2, aes(x = time, y = tMean)) +
+  geom_line() +
+  geom_errorbar(aes(ymin = tMean-2*tSe,
+                    ymax = tMean+2*tSe), width = 0.1)
+
+ggplot(Indometh, aes(x = time, y = conc)) +
+  stat_summary(fun.data = "mean_cl_normal", geom = "errorbar", width = 0.1) +
+  stat_summary(fun.y = "mean", geom = "line")
+
+# aes -- что, geom - как
+
+# log-scale
+library(scales)
+ggplot(homes, aes(x =finsqft, y = totalvalue)) +
+  geom_point(alpha = 1/5) +
+  scale_x_log10(labels = comma, breaks = seq(0, 1e4, 2e3)) +
+  scale_y_log10(labels = dollar, breaks = seq(0, 10e6, 2e6))
+
+# пары - GGally
+install.packages("GGally")
+library(GGally)
+library(dplyr)
+library(ggplot2)
+
+homes %>%
+  select(finsqft, lotsize, totalvalue, bedroom) %>%
+  ggpairs()
+
+# ggscatmat() -- только numeric
+
+# Animate
+install.packages("gganimate")
+library(gganimate)
+
+samp <- homes %>%
+  sample_n(1000)
+
+p <- ggplot(samp, aes(x = finsqft, y = totalvalue, color = city)) +
+  geom_point()
+p
+
+install.packages("gifski")
+install.packages("png")
+library(gifski)
+library(png)
+p + transition_states(city, transition_length = 2, state_length = 1) +
+  enter_fade() +
+  exit_shrink()
+
+
+# представить пум на карте США
+cougar <- read.csv("cougar.csv", 
+                 header=T, 
+                 sep=",")
+
+View(cougar)
+
+install.packages("maps")
+install.packages("mapproj")
+library(maps)
+library(mapproj)
+
+states <- map_data("state")
+
+cougar$region <- tolower(cougar$providedState)
+
+cougmap <- filter(cougar, !is.na(decimalLongitude)) %>%
+  inner_join(states, by='region')
+
+ggplot(cougmap, aes(x=long, y=lat)) +
+  borders("state") +
+  geom_point(aes(x=decimalLongitude, y=decimalLatitude, color=basisOfRecord)) +
+  coord_map("polyconic")
+
+ggsave('cougars.jpg', width = 10, height = 5)
+
+### merging
+left <- data.frame(id = c(2:5),
+                   x = c(90,93,99,89))
+
+left
+
+right <- data.frame(id = rep(1:4, each =2),
+                    y = c("a", "d", "e", "c", "e", "d", "a", "b"))
+
+right
+
+library(dplyr)
+
+left_join(left, right, by="id") # только если match в правой (recycle)
+
+right_join(right, left, by="id") # только если match в левой (recycle)
+
+inner_join(left, right, by="id") # полное совпадение
+
+full_join(left, right, by="id") # не важно match
+
+dat11 <- tibble(REGION = c(1,1,2,2),
+               STATE = c(1,2,1,2),
+               x = runif(4))
+
+dat12 <- tibble(REGION = c(1,2,3),
+               STATE = c(2,1,1),
+               y = c("a","b","c"))
+
+left_join(dat11, dat12, by=c("REGION","STATE"))
+
+
+dat11 <- tibble(id1 = c(1,1,2,2),
+               id2 = c(1,2,1,2),
+               x = runif(4))
+# задание ключей к столбцам объединения
+left_join(dat11, dat12, by=c("id1" = "REGION", "id2" = "STATE"))
+
+ex01 <- tibble((id = 1:5, name = "A", "B", "C", "D", "E"),
+               age = c(67, 15, 42, 37, 17))
+
+ex02 <- tibble(ID = 1:3,
+               GRP = c(1,1,2))
+
+#anti
+anti_join(ex01, ex02, by=c("id"="ID")) # все строки в ex01 НЕ match ex02
+#semi
+semi_join(ex01, ex02, by=c("id"="ID")) # все строки в ex01 match ex02
+
+##############
+# random
+color <- rep(c("Black","Red","Green"), c(18,18,2))
+n <- 1000
+# выпало красное -- player win $1
+# создать S сумма выигрышей
+
+x <- sample(ifelse(color == "Red", -1, 1), n, replace = T)
+x[1:10]
+
+x <- sample(c(-1,1), n, replace = T, prob = c(9/19, 10/19))
+s <- sum(x)
+s
+
+b <- 10000
+
+roulette <- function(n){
+  x <- sample(c(-1,1), n, replace = T, prob = c(9/19, 10/19))
+  s <- sum(x)
+}
+
+s <- replicate(b, roulette(n))
+hist(s)
+mean(s<0)
+sd(s)
+
+# биномиальное распределение
+pbinom(n/2, size = n, prob = 10/19) # p(s<=0)
+pbinom(n/2 - 1, size = n, prob = 10/19) # теперь правильно
+
+# центральная предельная теорема
+mu <- n*(20-18)/38
+sd <- sqrt(n)*2 * sqrt(90)/19
+
+pnorm(0,mu,sd)
+
+# case банк
+# 1000 займов по 180 тыс
+# 200 тыс потери из-за непл
+
+n <- 1000
+loss <- -200000
+p <- 0.02
+def <- sample(c(0,1), n, prob = c(1-p, p), replace = T)
+sum(def*loss)
+
+# прогнозируем методом Монте-Карло
+b <- 10000
+losses <- replicate(b,{
+  def <- sample(c(0,1), n, prob = c(1-p, p), replace = T)
+  sum(def*loss)
+})
+hist(losses)
+
+n*(p*loss*1 + (1-p)*0) #mu
+sqrt(n)*abs(loss*sqrt(p*(1-p))) #sd
+a <- -loss*p*(1-p) # величина для увеличения
+a/180000 # на этот процент нужно поднять % ставку
+# если поднимем на 2.2% ~ в ноль
+gnorm(0.01) # квантиль нормального распределения
+
+
+
+
+
+
+```
+

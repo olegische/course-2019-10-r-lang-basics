@@ -1,6 +1,6 @@
 ---
 title: "Задание 3"
-author: "Введите имя"
+author: "Oleg Romanchuk"
 date: 'Assigned: October 31, 2019'
 output: 
   html_document:
@@ -22,6 +22,20 @@ output:
 ```{r, eval = FALSE}
 # Функция RowMeansCalc
 
+library(dplyr)
+
+RowMeansCalc  <- function(m){
+  mm <- 1:ncol(m)
+  for (i in 1:ncol(m)){
+    mm[i] <- mean(m[,i])
+  }
+  return(mm)
+}
+
+mat <- matrix(seq(1:10), nrow = 2, ncol = 5)
+
+RowMeansCalc(mat)
+
 ```
 
 **(b)** Сгенерируйте большую матрицу из равномерного распределения
@@ -29,13 +43,25 @@ output:
 set.seed(12345)
 
 # дополните код для создания матрицы
-(runif(), nrow = )
+a <- 6
+rmat <- matrix(runif(10^a), nrow = 10^(a/2), ncol = 10^(a/2))
+
 ```
 
 **(c)** Проверьте время выполнения кода по функции *RowMeansCalc* и с помощью векторной операции apply. Выведите сравнительную таблицу и постройте график.
 
 ```{r, eval = FALSE}
 # Введите код
+#install.packages("microbenchmark")
+library(microbenchmark)
+library(ggplot2)
+
+tm <- microbenchmark(
+               RowMeansCalc(rmat),
+               apply(rmat, 2, mean)
+)
+tm
+autoplot(tm)
 
 ```
 `Tip:` Для измерения воспользуйтесь библиотекой *microbenchmark*.
@@ -45,12 +71,28 @@ set.seed(12345)
 **(a)** По выборке Cars93 создайте таблицу, показывающую среднюю величину `Turn.circle`, сгруппированную по типам автомобиля и по `DriveTrain`
 ```{r, eval = FALSE}
 # Введите код
+library(dplyr)
+library("MASS")
+
+Cars93 %>%
+  group_by(Type, DriveTrain) %>%
+  summarize(mean(Turn.circle))
+
+#factor(Cars93$Type)
+#factor(Cars93$DriveTrain)
 
 ```
 
 **(b)** Все ли комбинации Типа и `DriveTrain` показаны в таблице? Если нет, какие пропущены? Почему они пропущены?
 
-> Замените этот текст решением
+> В таблице
+```{r, echo=FALSE, results='markup'}
+Cars93 %>%
+  group_by(Type, DriveTrain) %>%
+  summarize(mean(Turn.circle))
+```
+представлены не все комбинации Type и DriveTrain. Пропущены те, которых нет в таблице.
+
 
 **(c)** В городе удобно иметь машину с маленьким радиусом поворота. Какому типу машин должны отдавать предпочтения городские водители?
 

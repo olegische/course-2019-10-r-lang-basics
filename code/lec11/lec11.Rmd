@@ -1,0 +1,227 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+# lecture 11
+```{r}
+#приставки для распределений
+# p - probability - DF - pnorm
+# q - quantile - квантилль - qnorm
+# d - density - плотность - dnrom
+# r - random - случайное - rnorm
+# Компания, производящая гаджеты. Масса 17.46, вариация 375.67. Вероятность случайно-выбранный гаджет >19: P(X>19) X~N(m,s)
+1 - pnorm(19, mean = 17.46, sd = sqrt(375.7))
+#IQ mean = 100, sd = 15, определить 95% персентиль IQ
+qnorm(0.95, 100, 15)
+#Результаты теста, mean = 72, sd=15.2, какой процент студентов наберет больше 84
+1 - pnorm(84, mean = 72, sd = 15.2)
+#Нормальное распределение
+x = rnorm(1000000, 100, 15)
+hist(x, probability = T)
+xx <- seq(min(x), max(x), length = 1000)
+lines(xx, dnorm(xx, mean=100, sd = 15))
+#Binomial
+# В коробке 25 штук чего-то, 0.5% что-то забраковано, найти вероятность, что случайно выбранная коробка будет иметь ровно 1 дефектный виджет:
+dbinom(1, 25, 0.005)
+#Не более 1 дефектного:
+pbinom(1, 25, 0.005) #Оценка надёжности
+
+
+# Тест из 12 вопросов, (5 возможных ответов, только 1 верное). Найти вероятноять, что у студента, отвеч наугад, будет 4 или меньше правильных ответов.
+
+pbinom(4, size=12, prob=0.2)
+
+dbinom(4, size=12, prob=0.2) + # 13.3
+  dbinom(3, size=12, prob=0.2) +
+  dbinom(2, size=12, prob=0.2) +
+  dbinom(1, size=12, prob=0.2) +
+  dbinom(0, size=12, prob=0.2)
+
+# распределение Пуассона
+# поток событий: за минуту 12 событий. веротяность, что за минуту пройзойдет 17 или больше событий
+help(ppois)
+1-ppois(16, 12)
+ppois(16,12,lower.tail = F) #справа (x > )
+
+# равномерное распределение
+# выбрать 10 чисел от 1 до 3
+set.seed(1)
+runif(10, min = 1, max = 3)
+
+# экспоненциальное распределение
+# среднее время на покупателя 3мин. найти вероятность, что кассир справится меньше, чем за 2 мин
+pexp(2, rate = 1/3)
+
+# хи квадрат
+# 95% персентиль m=7 степеней свободы
+qchisq(0.95,df=7)
+
+# распределение Стьюдента
+# 2.5% и 97.5%
+qt(c(0.025, 0.095), df=5)
+
+# распределение Фишера
+# 95% персентиль со степенями свободы 5 и 2
+qf(0.95, df1 = 5, df2 = 2)
+
+# проверка гипотез
+# лампы горят 10000 часов. 30 ламп выборка. среднее при эксперименте 9900. sd = 120, гипотеза с 5% значимостью, что лампы горят 10тыс. часов
+# H0: mu>=10000
+xbar = 9900
+mu0 = 10000
+sigma = 120
+n = 30
+
+z = (xbar-mu0)/(sigma/sqrt(n))
+z
+##1
+alpha = 0.05
+z.alpha <- qnorm(1 - alpha)
+-z.alpha #т.к. z < -z.alpha -- H0 отклонена
+##2
+pnorm(z) # H0 отклонена
+
+#!!! нужно строить боксплоты. должна быть одинаковая дискретизация. т.е. нужно, чтобы данные снимались с одинаковой частотой.
+
+#!!! text mining, word scrapping
+
+# (saturate) не более 2 гр жира в печенье, 35 печенек. в них mean=2.1 грамма жира. sd=0.25, на 5% уровне значимости понять, обманывает ли производитель
+xbar = 2.1
+mu0 = 2
+sigma = 0.25
+n = 35
+
+z = (xbar-mu0)/(sigma/sqrt(n))
+z
+
+alpha = 0.05
+z.alpha <- qnorm(1 - alpha)
+z.alpha # т.к. z > z.alpha, значит в печеньках больше 2гр. производитель не прав
+
+# в прошлом году пингвины весили 15,4кг. в этмо году померяли 35 пингвинов. mean 14.6kg, sd = 2.5, значимость 5% 
+# двусторонний тест Стьюдента
+xbar = 14.6
+mu0 = 15.4
+sigma = 2.5
+n = 35
+
+z = (xbar-mu0)/(sigma/sqrt(n))
+z
+##1
+alpha = 0.05
+z.alpha2 <- qnorm(1 - alpha/2) # двусторонний тест Стьюдента
+c(-z.alpha2, z.alpha2) # доверительный интервал. z внутри интервала. весят так же
+##2
+2*pnorm(z) # p-value на грани, но весят столько же
+
+# ошибки 1 рода (отклонили верную гипотезу)
+# -> ошибка 2 рода (приняли неверную)
+# лампы горят 10000 часов. 30 ламп выборка. среднее при эксперименте 9950. sd = 120, вероятность, что на выборке 30 ламп возникнет ошибка второго рода
+sigma = 120
+n = 30
+sem= sigma/sqrt(n)
+alpha = 0.05
+mu0 = 10000
+q = qnorm(alpha, mean = mu0, sd = sem)
+round(q)
+
+# 9964 - lower bound, mu >= 10000
+mu = 9950
+# вероятность появления ошибки второго рода, что H0 9950 > 9964
+1-pnorm(q, mean = mu, sd = sem)
+
+
+# (saturate) не более 2 гр жира в печенье, 35 печенек. в них mean=2.09 грамма жира. sd=0.25, вероятность, что на выборке 35 печенек возникнет ошибка второго рода
+sigma = 0.25
+n = 35
+sem = sigma/sqrt(n)
+alpha = 0.05
+mu0 = 2 # гипотетическое верхняя граница
+q = qnorm(alpha, mean = mu0, sd = sem, lower.tail = F)
+q
+
+# 2 - lower bound, mu >= 2
+mu = 2.09
+# вероятность появления ошибки второго рода, что H0 2.1 > 2
+pnorm(q, mean = mu, sd = sem) 
+# 31.68% SE2 (вероятность ошибки второго рода)
+1-pnorm(q, mean = mu, sd = sem) # 68.5 - мощность теста
+
+# если выборка 35, и реальное значение жира 2,09гр, тогда 31,86% будет ошибка второго рода по нулевой гипотезе mu <=2
+
+# sampling (формирование выборки)
+# кубик
+sample(1:6, 10, replace = T)
+
+# монета
+sample(c("орел","решка"), 10, replace = T)
+
+# выбор карт
+cards=(paste(rep(c("A",2:10,"J","Q","K"),4),c("C","D","H","S")))
+sample(cards,5)
+# лотерея 6 из 54
+sample(1:54, 6, replace = F)
+
+# два кубика
+dice <- as.vector(outer(1:6,1:6, paste))
+sample(dice, 5, replace = T)
+
+# статистические тесты
+daily.intake <- c(5260,5740,5640,6180,6390,6515,6805,
+                  7515,7515,8230,8770)
+
+
+mean(daily.intake)
+sd(daily.intake)
+quantile(daily.intake)
+
+# тест Стьюдента
+t.test(daily.intake, mu=7225) # H0 mu0=mu => H0 -- True, 6778 = 7225
+# p-value - вероятность принятия нулевой гипотезы
+# применяется когда распределение нормальное
+
+# непараметрический тест Wilcox
+wilcox.test(daily.intake, mu = 7225) # warning из-за повторяющихся
+# H0 -- True
+
+# Двухвыборочный тест
+library(ISwR)
+data("energy")
+str(energy)
+
+t.test(energy$expend~energy$stature) # p < 0.05, => H0 F, H1 T (есть разница в средних) (~ -- сравнение двух выборок)
+
+t.test(energy$expend~energy$stature, var.equal = T)
+
+# создать 50 нормально распределенных случайных mean 10 sd 0.5
+#mu=10?
+set.seed(100)
+t.test(rnorm(50, mean = 10, sd = 0.5), mu=10) # H0 -- True
+
+# Читать Айвазян, Хиторян Теория вероятностей и математическя статистика
+# Applied statistycs and probability for engeneerings 
+
+
+
+
+
+```
+
