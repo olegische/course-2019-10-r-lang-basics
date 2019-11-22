@@ -1,0 +1,228 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+# lecture 13
+```{r}
+library(readr)
+setwd("C:/Users/107/Documents")
+pw <- read_csv("pw.csv")
+cs <- read_csv("cs.csv")
+pg <- read_csv("pg.csv")
+mf <- read_csv("mf.csv")
+fw <- read_csv("fw.csv")
+
+fw
+fw <- as.data.frame(fw)
+cor.test(fw$count, fw$speed)
+
+summary(fw.lm <- lm(count~speed, data=fw))
+names(fw.lm)
+
+confint(fw.lm, level = 0.99)
+confint(fw.lm, parm = 'speed', level = 0.95)
+confint(fw.lm, parm = c('(Intercept)', 'speed'), level = 0.95)
+
+# подстановка исходных данных в уравнение регрессии
+fitted(fw.lm)
+
+mean(fw$count)
+# разница между исходными данными и подставленными
+residuals(fw.lm)
+#1
+plot(fw$speed, fw$count)
+abline(lm(count~speed, data=fw))
+#2
+plot(~speed + count, data=fw)
+abline(a=coef(fw.lm[1]),b=coef(fw.lm[2]))
+#3
+plot(count~speed,data=fw)
+abline(coef(fw.lm))
+
+pw.aov <- aov(height~water,data=pw)
+pw.lm <- lm(height~water, data = pw)
+summary(pw.aov)
+summary(pw.lm)
+
+#////
+mf <- mf[-1]
+cor(mf)
+max(abs(cor(mf$Length,mf))[-1])
+which.max(abs(cor(mf$Length,mf))[-1])
+summary(mf.lm <- lm(Length~BOD,data=mf))
+
+# подход снизу вверх
+mf.lm <- lm(Length~1,data=mf)
+add1(mf.lm,scope = mf)
+# step 1
+mf.lm <- lm(Length~BOD, data=mf)
+add1(mf.lm, scope = mf)
+# смотрим минимум AIC
+# step 2 -- error
+mf.lm <- lm(Length~BOD+Speed, data = mf)
+add1(mf.lm,scope = mf)
+summary(mf.lm)
+# как надо
+mf.lm <- lm(Length~BOD, data = mf)
+# смотрим на Pf(>F), если оно больше, чем 0,05, то добавление этого параметра в уравнение регрессии не приведет ни к чему
+# Pr(>F) -- веротяность получения значения выше, чем F value
+add1(mf.lm,scope = mf, test = "F")
+mf.lm <- lm(Length~Algae, data = mf)
+summary(mf.lm)
+add1(mf.lm, scope = mf, test = "F")
+
+mf.lm <- lm(Length~Algae+BOD,data=mf)
+summary(mf.lm)
+
+# подход сверху вниз
+summary(mf.lm <- lm(Length~.,data = mf))
+
+drop1(mf.lm, scope = mf, test = "F")
+# можем убирать Algae и NOD3. Убирать нужно, чтобы упростить модель. С простой моделью удобнее работать
+mf.lm <- lm(Length~. - NO3, data = mf)
+summary(mf.lm)
+# значимый фактор
+#install.package("gapminder")
+library(gapminder)
+summary(lm(data=gapminder,lifeExp~gdpPercap))
+summary(lm(data=gapminder,lifeExp~gdpPercap+continent))
+
+#сравнение моделей
+mf.lm1 <- lm(Length~BOD, data=mf)
+mf.lm2 <- lm(Length~., data = mf)
+mf.lm3 <- lm(Length~BOD+Speed,data=mf)
+anova(mf.lm1,mf.lm2,mf.lm3) # p > 0.05, значимых отличий нет. Нет предпосылок выбрать m2 или m3, а не m1
+
+# Task - регрессия mpg~
+summary(mtcars.lm <- lm(mpg~., data=mtcars))
+summary(mtcars.lm <- lm(mpg~1, data=mtcars))
+add1(mtcars.lm, scope = mtcars, test = "F")
+summary(mtcars.lm <- lm(mpg~wt, data=mtcars))
+add1(mtcars.lm, scope = mtcars, test = "F")
+summary(mtcars.lm <- lm(mpg~wt+cyl, data=mtcars))
+add1(mtcars.lm, scope = mtcars, test = "F")
+
+# линейная модель хороший конкурент градиентному бустингу
+# описывает мир
+# линейная модель 100% интерпретируема (в отличии от нейронной сети, где интерпретируемость 0)
+
+# что-то про principal component analysis
+
+library(ggplot2)
+str(cs)
+cs$is.south <- as.factor(cs$is.south)
+# анализ
+qplot(median.assets,crime.per.million,data=cs)
+cor(cs$median.assets,cs$crime.per.million)
+qplot(is.south, crime.per.million, geom='boxplot', data=cs)
+
+cs.lm <- lm(crime.per.million~.,data = cs)
+summary(cs.lm)
+# все значимые -- положительные, т.е. влияют положительно на выбранный параметр
+#options(scipen=4)
+cs.lm.coef <- round(summary(cs.lm)$coef,3)
+# достать p-value
+cs.lm.coef["average.ed","Pr(>|t|)"]
+par(mfrow=c(2,2))
+plot(cs.lm)
+# 1-й график -- не должно быть трендов. если есть, то не убрали значимый фактор
+# если Normal q-q не лежит на прямой, но это ен линейная модель
+# scale location не должно быть трендов, если есть тренд, то неверная спецификация. Нелинейную модель оцениваем линейной 
+summary(cs.lm)
+# что-то про метод главных компонент
+# объединение переменных возможно при логичной интерпретации (a*x1+(1-a)*x2)
+economic.var.mames <- c("exp.per.cap.1959","exp.per.cap.1960",
+                        "unemp.adult", "unemp.youth", "labour.part","median.assets")
+library(GGally)
+pairs(cs[,economic.var.mames])
+ggpairs(cs[,economic.var.mames])
+# фиктивная переменная: время года - з,в,л,о
+# з - def, в - z1, л - z2, о - z3
+# y = b1 ... + 0.112*z1*1 + -0.7776*0 + 0.123*0
+
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y))
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = pmax(1, cex.cor * r))
+}
+
+pairs(cs[,economic.var.mames],lower.panel = panel.cor)
+
+cs.lm <- lm(crime.per.million~.,data = cs)
+cs.lm2 <- update(cs.lm, .~. -exp.per.cap.1959 - unemp.youth)
+summary(cs.lm)
+summary(cs.lm2)
+confint(cs.lm2)
+options(scipen=4)
+confint(cs.lm2)
+
+# факторы в модели
+library(MASS)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+birthwt <- as_tibble(MASS::birthwt)
+birthwt <- birthwt %>%
+ rename(birthwt.below.2500 = low,
+        mother.age = age,
+        mother.weight = lwt,
+        mother.smokes = smoke,
+        previous.prem.labor = ptl,
+        hypertension = ht,
+        uterine.irr = ui,
+        physician.visits = ftv,
+        birthwt.grams = bwt)
+birthwt <- birthwt %>%
+ mutate(race = recode_factor(race, `1` = "white", `2` = "black", `3` = "other")) %>%
+ mutate_at(c("mother.smokes", "hypertension", "uterine.irr", "birthwt.below.2500"),
+           ~ recode_factor(.x, `0` = "no", `1` = "yes"))
+
+birthwt.lm <- lm(birthwt.grams ~
+                   race + mother.smokes + mother.age, data = birthwt)
+summary(birthwt.lm)
+
+# влияние расы
+anova(update(birthwt.lm, .~. -race), birthwt.lm,test="Chisq") # p < 0.05, раса значимый фактор
+birthwt.lm.plot <- lm(birthwt.grams ~ race + mother.age, data = birthwt)
+
+intercepts <- c(coef(birthwt.lm.plot)["(Intercept)"],
+                coef(birthwt.lm.plot)["(Intercept)"]+
+                  coef(birthwt.lm.plot)["raceother"],
+                coef(birthwt.lm.plot)["(Intercept)"]+
+                  coef(birthwt.lm.plot)["raceblack"])
+
+lines.df <- data.frame(intercepts = intercepts,
+                       slopes = rep(coef(birthwt.lm.plot)["mother.age"],3),
+                       race = levels(birthwt$race))
+qplot(x=mother.age, y=birthwt.grams, color=race,data=birthwt)+
+  geom_abline(aes(intercept = intercepts,
+                  slope = slopes,
+                  color = race), data = lines.df)
+
+
+```
+
+

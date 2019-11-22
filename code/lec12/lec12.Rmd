@@ -1,0 +1,275 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+# Lecture 12
+
+```{r}
+library(MASS)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+
+birthwt <- as_tibble(MASS::birthwt)
+birthwt <- birthwt %>%
+ rename(birthwt.below.2500 = low,
+        mother.age = age,
+        mother.weight = lwt,
+        mother.smokes = smoke,
+        previous.prem.labor = ptl,
+        hypertension = ht,
+        uterine.irr = ui,
+        physician.visits = ftv,
+        birthwt.grams = bwt)
+birthwt <- birthwt %>%
+ mutate(race = recode_factor(race, '1' = "white", '2' = "black", '3' = "other")) %>%
+ mutate_at(c("mother.smokes", "hypertension", "uterine.irr", "birthwt.below.2500"),
+           ~ recode_factor(.x, '0' = "no", '1' = "yes"))
+
+# Разность в средних
+# 1-boxplot
+qplot(x = mother.smokes, y = birthwt.grams,
+      geom = 'boxplot', data = birthwt,
+      xlab = 'Mother smokes',
+      ylab = 'Birth weight')
+
+# 2- table
+birthwt %>%
+  group_by(mother.smokes) %>%
+  summarise(meanBW = round(mean(birthwt.grams),0),
+            sdBW = round(sd(birthwt.grams),0))
+
+# 3 - t-test
+B.t.test <- t.test(birthwt.grams~mother.smokes, data = birthwt)
+B.t.test # H1 -> T, p<0.05
+class(B.t.test)
+names(B.t.test)
+B.t.test$p.value
+B.t.test$estimate
+B.t.test$conf.int # доверит интервал
+attr(B.t.test$conf.int, "conf.level")
+B.t.test$statistic
+B.t.test$estimate
+
+# Создать inline код
+```
+Исследование показало, что средняя масса в группе некурящих на ```r (B.t.test$estimate[1] -  B.t.test$estimate[2])``` выще, чем в группе курящих (t-stat = ```r B.t.test$statistic```, p-value = ```r B.t.test$p.value```. ```r B.t.test$conf.int``` CI [```r B.t.test$conf.int[1]``` ```r B.t.test$conf.int[2]```])
+
+```{r}
+# недостаток t.test -- требование нормальности
+# непараметрические тесты, если распределение не нормальное
+# другой синтаксис t-test
+with(birthwt, t.test(x=birthwt.grams[mother.smokes == 'no'],
+                     y=birthwt.grams[mother.smokes == 'yes']))
+
+# Monte carlo (2 случая)
+set.seed(12345)
+genSim <- function(n1,n2,mean.shift = 0){
+  y <- rnorm(n1+n2) + c(rep(0,n1), rep(mean.shift,n2))
+  groups <- c(rep('control',n1), rep('treatment',n2))
+  data.frame(y=y, groups=groups)
+}
+n1=30
+n2=40
+# NULL
+obs.data <- genSim(n1=n1,n2=n2)
+obs.data
+
+qplot(x=groups, y=y, data=obs.data,geom = 'boxplot')
+
+# density
+qplot(fill=groups, x=y, data=obs.data, geom='density',
+      alpha = I(0.5),
+      adjust = 1.5,
+      xlim = c(-4,6))
+
+t.test(y~groups, data=obs.data) # средние равны
+# Случай 1
+mean(obs.data[1:30,1])
+mean(obs.data[31:70,1])
+
+obs.data <- genSim(n1=n1, n2=n2, mean.shift = 1.5)
+qplot(x=groups, y=y, data=obs.data,geom = 'boxplot')
+qplot(fill=groups, x=y, data=obs.data, geom='density',
+      alpha = I(0.5),
+      adjust = 1.5,
+      xlim = c(-4,6))
+
+t.test(y~groups, data = obs.data) # средние отличаются
+
+# создадим симуляцию
+NUM_ITER = 10000
+pvals <- matrix(0, nrow = NUM_ITER, ncol = 2)
+for(i in 1:NUM_ITER){
+  #gen
+  obs.null <- genSim(n1,n2)
+  obs.alt <- genSim(n1,n2,0.5)
+  pvals[i,1] <- t.test(y~groups, data=obs.null)$p.value
+  pvals[i,2] <- t.test(y~groups, data=obs.alt)$p.value
+}
+
+pvals <- as.data.frame(pvals)
+colnames(pvals) <- c('null','alt')
+# plot
+qplot(x=null, data = pvals, xlab = 'p-value',
+      xlim = c(0,1), main = 'pval for null')
+
+qplot(x=alt, data = pvals, xlab = 'p-value',
+      xlim = c(0,1), main = 'pval for alt')
+
+# объединим графики
+pvals.df <- data.frame(pvals = c(pvals$null, pvals$alt),
+                      case = c(rep('null',NUM_ITER),
+                               rep('alt', NUM_ITER)))
+ggplot(data=pvals.df, aes(x=pvals, fill=case)) +
+  geom_histogram(alpha=0.75, position = 'identity') +
+                   xlim(0,1)
+
+# wilcox-test (для ненормальных)
+B.wilcox.test <- wilcox.test(birthwt.grams~mother.smokes, data = birthwt, 
+                             conf.int=TRUE)
+B.wilcox.test # H1 = T, p<0.05
+
+with(birthwt, wilcox.test(x=birthwt.grams[mother.smokes == 'no'],
+                     y=birthwt.grams[mother.smokes == 'yes']))
+
+names(B.wilcox.test)
+B.wilcox.test$method
+B.wilcox.test$conf.int
+
+# проверка нормальности
+# QQ
+p.bwt <- ggplot(data = birthwt, aes(sample = birthwt.grams))
+p.bwt + stat_qq() + stat_qq_line()
+
+p.bwt + stat_qq() + stat_qq_line() + facet_grid(.~mother.smokes)
+
+# ideal
+df <- data.frame(x=rnorm(115))
+ggplot(data = df, aes(sample=x)) + stat_qq() + stat_qq_line()
+
+## !ideal
+set.seed(12345)
+df1 <- data.frame(x=rexp(200))
+p.fake <- ggplot(df1, aes(sample = x))
+qplot(x,data=df1)
+p.fake + stat_qq() + stat_qq_line()
+
+shapiro.test(as.numeric(df$x)) # p > 0.05 данные N~(mu,sd)
+shapiro.test(as.numeric(df1$x)) # p<0.05 - данные !N~
+
+# смотрели квартет Энскомба
+
+# тесты по таблицам
+w.smoke.tbl <- with(birthwt, table(birthwt.below.2500, mother.smokes))
+w.smoke.tbl # contingency table
+
+B.fisher.test <- fisher.test(w.smoke.tbl)
+B.fisher.test # H0 - отношение шансов = 1, H1 != 1, H1 = T, лурение влияет
+# рождение ребенка с весом <2.5 кг в 2,01 раза выше, если мать курит
+chisq.test(w.smoke.tbl)
+
+# more tables
+politics <- as.table(rbind(c(762,327,468), c(484,239,477)))
+dimnames(politics) <- list(gender = c('F','M'), party = c('Dem','Ind','Rep'))
+politics
+# Зависит от пола?
+politics.prop <- prop.table(politics, 1)
+politics.prop
+colSums(politics.prop)
+chisq.test(politics)
+
+p1 <- politics[,c(1,3)]
+p1
+fisher.test(p1) # шансы женщин быть в демократической партии, p<0.05 => есть отличие в числе женщин приверженцев дем. и респ. по сравнению с мужчинами в 1,6 раза
+
+politics.df <- as.data.frame(politics.prop)
+politics.df
+
+ggplot(politics.df, aes(x=party, y=Freq, fill=gender)) +
+  geom_bar(position = 'dodge', stat = 'identity')
+
+# ANOVA
+# Есть ли значимая связь между расой и весом рождения?
+birthwt %>%
+  group_by(race) %>%
+  summarise(mean.bwt = round(mean(birthwt.grams),0),
+            se.bwt = round(sd(birthwt.grams)/sqrt(n()),0))
+summary(aov(birthwt.grams~race, data = birthwt)) # вывод по ANOVA: H0: связи нет, H1: есть связь между расой и весом при роджении. H1 = T
+
+ToothGrowth
+# install.packages("ggpubr")
+library(ggpubr)
+ggboxplot(ToothGrowth, x = 'dose', y='len', color = 'supp')
+summary(aov(len~supp+dose, data = ToothGrowth)) # + -- перечисление факторов
+# supp -- метов доставки, dose -- доза, Оба фактора влияют, доза влияет более значимо
+
+summary(aov(len~supp+dose+supp:dose, 
+            data = ToothGrowth)) #supp:dose -- взаимодействие факторов
+# ~ - зависимость
+# : - взаимодействие
+# * - все возможные взаимодействия
+# + разделение переменных
+# - - убрать переменную
+# -1 - убрать свободный член из регрессии
+# I() в скобках арифм. преобразование
+# y~I((x+w)^2) y~z, z=(x+w)^2
+#y~x*y*z -- экв y~x+w+z+x:z+x:w+w:z+x:w:z
+
+# tasks
+# 1. проверить на выборке Cars93 средние по группе US, не US (mpg.Highway)
+names(Cars93)
+summary(aov(MPG.highway~Origin, data = Cars93))
+
+# 2. доверительный интервал для разности в средних
+Cars93 %>%
+  group_by(Origin) %>%
+  summarise(meanMpg = round(mean(MPG.highway),0),
+            sdMpg = round(sd(MPG.highway),0))
+
+Mpg.t.test <- t.test(MPG.highway~Origin, data = Cars93)
+Mpg.t.test
+
+# 3. почему различаются результаты для t и для wilcox? показать, построив графики протности распределений
+Mpg.wilcox.test <- wilcox.test(MPG.highway~Origin, data = Cars93, conf.int=T)
+Mpg.wilcox.test
+qplot(fill=Origin, x=MPG.highway, data=Cars93, geom='density',
+      alpha = I(0.5))
+#      alpha = I(0.5),
+#      adjust = 1.5,
+#      xlim = c(-4,6))
+# 4. построить qq графики для US и не US (MPG.Highway). Соответствуют ли графики плотностям?
+p.mpg <- ggplot(data = Cars93, aes(sample = MPG.highway))
+p.mpg + stat_qq() + stat_qq_line()
+# на обоих графиках наблюдается асимметрия
+# 5. дана выборка. проверить, есть ли связь между заболеваемостью раком и курением
+smoking <- as.table(rbind(c(688,650),c(21,59)))
+dimnames(smoking) <- list(has.smoked = c('yes','no'),
+                          lung.cancer = c('yes','no'))
+smoking
+
+#smoking.prop <- prop.table(smoking, 1)
+#smoking.prop
+#colSums(smoking.prop)
+fisher.test(smoking) # вероятность заболевания раком у курильщика больше в 2,97 раза
+
+```
+
