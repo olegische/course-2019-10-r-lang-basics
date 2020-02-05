@@ -1,0 +1,171 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+# project
+```{r}
+
+library(readr)
+homes <- read_csv('homes.csv')
+homes <- homes[-1]
+homes <- homes[-1]
+homes$condition <- as.factor(homes$condition)
+homes$cooling <- as.factor(homes$cooling)
+homes$city <- as.factor(homes$city)
+homes_new <- homes
+homes_new <- homes_new[-c(1:3)]
+homes_new <- homes_new[-c(10,12,13,16)]
+
+homes.lm <- lm(totalvalue~., data = homes_new)
+summary(homes.lm)
+
+ggplot(homes_new, aes(x=finsqft, y=totalvalue))+
+  geom_point() +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_smooth(color = "orange")
+
+ggpairs(homes_new, columns = 1:6)
+# парами проверяется зависимость переменных
+
+ggplot(homes_new, aes(x=finsqft, y=totalvalue)) +
+  geom_point() +
+  geom_smooth() +
+  facet_wrap(~city)
+
+lm_f1 <- lm(totaluvalue~age+finsqft+lotsize+bedroom+fullbath, data = homes_new)
+summary(lm_f1)
+
+homes_new <- homes_new %>% filter(!is.na(age))
+lm_f1 <- lm(totaluvalue~age+finsqft+lotsize+bedroom+fullbath, data = homes_new)
+summary(lm_f1)
+
+lm_f1 <- lm(totaluvalue~city+age+finsqft+lotsize+bedroom+fullbath, data = homes_new) #города не значимы
+summary(lm_f1)
+
+
+lm_f2 <- lm(totaluvalue~relevel(city, ref = "KESWICK")+age+finsqft+lotsize+bedroom+fullbath, data = homes_new)
+summary(lm_f2)
+
+anova(lm_f2) # город важен
+
+# взаимодействия
+lm_f3 <- lm(totaluvalue~city*finsqft+age+lotsize+bedroom+fullbath, data = homes_new)
+summary(lm_f3)
+
+# пробуем нелинейную модель
+lm_f4 <- lm(totaluvalue~city+I(finsqft^2)+age+lotsize+bedroom+fullbath, data = homes_new)
+summary(lm_f4)
+
+# берем логарифм от у (помогает во многих случаях)
+lm_f5 <- lm(log(totaluvalue)~city+finsqft+age+lotsize+bedroom+fullbath, data = homes_new)
+summary(lm_f5)
+
+# объединять не стоит, меняем по одной переменной
+
+par(mfrow=c(2,2))
+plot(lm_f5)
+# на 4-м графике точки левериджа (23153) -- это сильно значимое наблюдение, котрое сильно отстоит от линии регрессии. плохая точка
+
+homes_new[23153, c("city","finsqft","age","lotsize","bedroom","fullbath")]
+
+# сравнение моделей
+anova(lm_f1,lm_f4)
+ # использ, когда модифицируем y
+extractAIC(lm_f1)
+extractAIC(lm_f4)
+extractAIC(lm_f5) # y другой, нужно дополнительно пересчитать для сравнения
+
+extractAIC(lm_f5)[2] + 2*sum(log(homes_nes$totalvalue)) # AIC правильный
+
+# формирование выборки
+train <- sample(nrow(homes_new), round(0.75*nrow(homes_new)))
+lm_train <- lm(totaluvalue~city+I(finsqft^2)+age+lotsize+bedroom+fullbath, data = homes_new, subset = train)
+# rmse
+sqrt(mean((homes_new$totalvalue - predict(lm_train, homes_new))[-train]^2))
+
+rmse4 <- numeric(1000)
+set.seed(1)
+for(i in 1:length(rmse4)){
+  train <- sample(nrow(homes_new), round(0.75*nrow(homes_new)))
+  lm_train <- lm(totaluvalue~city+I(finsqft^2)+age+lotsize+bedroom+fullbath, data = homes_new, subset = train)
+  rmse4[i] <- sqrt(mean((homes_new$totalvalue - predict(lm_train, homes_new))[-train]^2))
+}
+
+mean(rmse4) # train-test (сумма квадратов остатков)
+# можно проверять разные модели
+rmse1 <- numeric(1000)
+set.seed(1)
+for(i in 1:length(rmse1)){
+  train <- sample(nrow(homes_new), round(0.75*nrow(homes_new)))
+  lm_train <- lm(totaluvalue~city+finsqft+age+lotsize+bedroom+fullbath, data = homes_new, subset = train)
+  rmse1[i] <- sqrt(mean((homes_new$totalvalue - predict(lm_train, homes_new))[-train]^2))
+}
+mean(rmse1)
+# модель 4 лучше, чем 1
+
+lm_f6 <- lm(log(totaluvalue)~., data = homes_new)
+summary(lm_f6)
+
+stepAIC(lm_f6) # смотрим модель, которую выберет функция
+
+lm_f6 <- lm(log(totalvalue) ~ condition + finsqft + cooling +
+              fp_num + fullbath + halfbath + totalrooms + city + lotsize +
+              lastsaleprice + age + med_age + fp + landuse + insub + remodel, data = homes_new)
+summary(lm_f6)
+
+lm_f6 <- lm(log(totalvalue) ~ condition + I(finsqft^2) + finsqft + cooling +
+              fp_num + fullbath + halfbath + totalrooms + city + lotsize +
+              lastsaleprice + age + med_age + fp + landuse + insub + remodel, data = homes_new)
+summary(lm_f6)
+plot(lm_f6)
+
+homes_new1 <- homes_new[-c(6670,16219,19585),]
+lm_f7 <- lm(log(totalvalue) ~ city + condition + I(finsqft^2) + finsqft + cooling +
+              fp_num + fullbath + halfbath + totalrooms + city + lotsize +
+              lastsaleprice + age + med_age + fp + landuse + insub + remodel, data = homes_new1)
+summary(lm_f7)
+
+# 2 модели: описательная (вся выборка) и прогностическая (деление на train, test)
+# в прогностической нужно избегать переобучения, иначе при предъявлении новых данных модель не сможет делать прогноз
+# чаще делаем 3 выборки, train, validate, test
+
+# фичи. пусть нейросети сами делают фичи
+# для линейной регрессии можно делать факторный анализ и добиваемся, чтобы остались только значимые факторы
+
+#1. кластеризация
+#2. регрессия
+#3. классификация
+
+#dat -- фиг знает какая комангда
+#x <- finance$sales
+histDensity <- function(v) {
+  x <- dat[[v]]
+  info <- paste0("Среднее = ",round(mean(x),3),
+                 ": медиана = ",round(median(x),3),
+                 ": sd = ",round(sd(x),3))
+  ggplot(dat, aes_string(x=v, y = "stat(density)")) +
+    geom_histogram(binwidth = 0.5, alpha = 0.5) +
+    geom_density(color = "blue") +
+    labs(title = v, subtitle = info)
+}
+
+# проверка равенства вариации -- плохо работает на бигдата. бурно развивающаяся область сейчас
+
+
+```
+
